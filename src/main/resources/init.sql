@@ -105,7 +105,7 @@ CREATE TABLE `salary` (
     `deduction_leave` DECIMAL(10,2) DEFAULT 0.00 COMMENT '请假扣款（日薪 × 请假天数）',
     `actual_salary` DECIMAL(10,2) DEFAULT 0.00 COMMENT '实际应发工资（最终到手金额）',
     `status` ENUM('未发放','已发放') DEFAULT '未发放' COMMENT '薪资发放状态',
-    `generate_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '生成时间',
+    `generate_time` DATETIME DEFAULT NULL COMMENT '生成时间',
     `pay_time` DATETIME DEFAULT NULL COMMENT '实际发放时间',
     FOREIGN KEY (`emp_id`) REFERENCES `employee`(`id`),
     -- 联合唯一键：同一员工同一个月只产生一条薪资记录

@@ -81,9 +81,9 @@
 
         <!-- 快捷角色选择 -->
         <div class="role-selector">
-            <div class="role-btn" onclick="fillLogin('系统管理员','123456')">管理员</div>
-            <div class="role-btn" onclick="fillLogin('陈主管','123456')">主管</div>
-            <div class="role-btn" onclick="fillLogin('张三','123456')">员工</div>
+            <div class="role-btn" onclick="selectRole(this)">管理员</div>
+            <div class="role-btn" onclick="selectRole(this)">主管</div>
+            <div class="role-btn" onclick="selectRole(this)">员工</div>
         </div>
 
         <!-- 登录表单 -->
@@ -94,13 +94,14 @@
                 <label for="name">姓名</label>
                 <input type="text" id="name" name="name" class="form-control"
                        placeholder="请输入姓名"
-                       value="${not empty name ? name : ''}" required autofocus>
+                       value="" required autofocus>
             </div>
 
             <div class="form-group">
                 <label for="password">密码</label>
                 <input type="password" id="password" name="password" class="form-control"
-                       placeholder="请输入密码（默认 123456）" required>
+                       placeholder="请输入密码（默认 123456）"
+                       value="" required>
             </div>
 
             <button type="submit" class="btn btn-primary" id="loginBtn">
@@ -116,14 +117,12 @@
     </div>
 
     <script>
-        function fillLogin(name, pwd) {
-            document.getElementById('name').value = name;
-            document.getElementById('password').value = pwd;
-            // 高亮当前选中的角色
-            document.querySelectorAll('.role-selector .role-btn').forEach(function(btn) {
-                btn.classList.remove('active');
+        function selectRole(btn) {
+            // 仅高亮当前选中的角色，不自动填充账号密码
+            document.querySelectorAll('.role-selector .role-btn').forEach(function(b) {
+                b.classList.remove('active');
             });
-            event.target.classList.add('active');
+            btn.classList.add('active');
         }
         
         // 登录按钮加载动画

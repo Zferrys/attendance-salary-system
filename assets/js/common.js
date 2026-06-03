@@ -178,32 +178,7 @@ function closeModal() {
 
 // ===== 打印薪资条 =====
 function printSalarySlip() {
-    var content = document.getElementById('slipContent');
-    if (!content) { window.print(); return; }
-    
-    var win = window.open('', '_blank', 'width=600,height=600');
-    win.document.write('<html><head><meta charset="UTF-8"><title>薪资条</title>');
-    win.document.write('<style>');
-    win.document.write('*{margin:0;padding:0;box-sizing:border-box;}');
-    win.document.write('body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;padding:20px;color:#1f2937;}');
-    win.document.write('.salary-slip{max-width:500px;margin:0 auto;border:2px solid #1a73e8;border-radius:12px;overflow:hidden;}');
-    win.document.write('.salary-slip-header{background:linear-gradient(135deg,#1e3a5f,#2980b9);color:#fff;padding:24px;text-align:center;}');
-    win.document.write('.salary-slip-header h2{font-size:20px;margin-bottom:4px;}');
-    win.document.write('.salary-slip-header p{font-size:13px;opacity:0.85;}');
-    win.document.write('.salary-slip-body{padding:24px;}');
-    win.document.write('.salary-slip-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px dashed #e5e7eb;font-size:14px;}');
-    win.document.write('.salary-slip-row .label{color:#6b7280;}');
-    win.document.write('.salary-slip-row .value{font-weight:600;}');
-    win.document.write('.salary-slip-row.total{border-bottom:none;border-top:2px solid #1a73e8;margin-top:8px;padding-top:14px;}');
-    win.document.write('.salary-slip-row.total .value{font-size:18px;color:#0d9e6c;}');
-    win.document.write('.salary-slip-footer{text-align:center;padding:16px;background:#f8fafc;font-size:12px;color:#9ca3af;}');
-    win.document.write('@page{size:auto;margin:0;}');
-    win.document.write('</style></head><body>');
-    win.document.write(content.innerHTML);
-    win.document.write('</body></html>');
-    win.document.close();
-    win.focus();
-    setTimeout(function(){ win.print(); win.close(); }, 500);
+    window.print();
 }
 
 // ===== 标签页切换 =====

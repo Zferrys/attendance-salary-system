@@ -772,15 +772,13 @@ textarea.form-control { resize: vertical; min-height: 80px; }
 
 /* ---- 打印样式（薪资条） ---- */
 @media print {
-    /* 打印模式下只显示弹窗内容 */
-    body.printing-slip * {
+    /* 隐藏所有元素 */
+    body * {
         visibility: hidden !important;
     }
-    body.printing-slip #slipModal,
-    body.printing-slip #slipModal * {
+    /* 只显示弹窗 */
+    #slipModal.active {
         visibility: visible !important;
-    }
-    body.printing-slip #slipModal {
         position: fixed !important;
         left: 0 !important;
         top: 0 !important;
@@ -788,18 +786,18 @@ textarea.form-control { resize: vertical; min-height: 80px; }
         height: auto !important;
         overflow: visible !important;
         background: none !important;
-        display: flex !important;
-        opacity: 1 !important;
-        pointer-events: none !important;
+        display: block !important;
     }
-    body.printing-slip #slipModal .modal-box {
+    #slipModal.active * {
+        visibility: visible !important;
+    }
+    #slipModal.active .modal-box {
         box-shadow: none !important;
         border: none !important;
         max-width: 600px !important;
         margin: 20px auto !important;
-        transform: none !important;
     }
-    body.printing-slip #slipModal .modal-actions {
+    #slipModal.active .modal-actions {
         display: none !important;
     }
     /* 强制单页 */
