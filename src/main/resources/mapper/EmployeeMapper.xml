@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ============================================================
+    EmployeeMapper XML映射文件
+    对应接口: com.attendance.mapper.EmployeeMapper
+    
+    核心技术点:
+    1. @One 关联查询: 通过select属性关联DepartmentMapper获取部门信息
+    2. 动态SQL (if/where): 多条件灵活组合查询
+    3. resultMap嵌套: Employee中包含Department子对象
+============================================================ -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.attendance.mapper.EmployeeMapper">
+
+    <!-- 基础结果映射（不含部门关联） -->
+    <resultMap id="empResultMap" type="Employee">
+        <id property="id" column="id"/>
+        <result property="empNo" column="emp_no"/>
+        <result property="name" column="name"/>
+        <result property="password" column="password"/>
+        <result property="deptId" column="dept_id"/>
+        <result property="position" column="position"/>
+        <result property="email" column="email"/>
+        <result property="baseSalary" column="base_salary"/>
+        <result property="entryDate" column="entry_date"/>
+        <result property="leaveDate" column="leave_date"/>
+        <!-- 部门名称（简单字段映射） -->
+        <result property="deptName" column="dept_name"/>
+        
+        <!-- 
+            【@One 关联查询 - 关键技术点】
+            将department对象嵌入到Employee中，通过单独SQL查询部门详情
+            
+            select: 调用DepartmentMapper的findById方法（namespace+methodId）
+            column: 传递给子查询的参数列名（当前员工的dept_id）
+            fetchType: "eager"表示立即加载（不是延迟加载）
+        -->
+        <association property="department" javaType="Department"
+                     select="com.attendance.mapper.DepartmentMapper.findById"
+                     column="dept_id" fetchType="eager"/>
+    </resultMap>
+
+    <!-- ==================== 登录验证 ==================== -->
+    
+    <!-- 员工登录：根据工号查询（密码验证在Service层进行，支持MD5+明文兼容） -->
+    <select id="login" resultMap="empResultMap">
+        SELECT e.*, d.dept_name 
+        FROM employee e 
+        LEFT JOIN department d ON e.dept_id = d.id 
+        WHERE e.emp_no = #{empNo}
+          AND e.leave_date IS NULL
+    </select>
+
+    <!-- 员工登录：根据姓名查询（密码验证在Service层进行） -->
+    <select id="loginByName" resultMap="empResultMap">
+        SELECT e.*, d.dept_name 
+        FROM employee e 
+        LEFT JOIN department d ON e.dept_id = d.id 
+        WHERE e.name = #{name}
+          AND e.leave_date IS NULL
+    </select>
+
+    <!-- 根据ID查询员工 -->
+    <select id="findById" resultMap="empResultMap">
+        SELECT e.*, d.dept_name
+        FROM employee e
+        LEFT JOIN department d ON e.dept_id = d.id
+        WHERE e.id = #{id}
+    </select>
+
+    <!-- 查询所有员工（含部门名称，按ID排序） -->
+    <select id="findAllWithDept" resultMap="empResultMap">
+        SELECT e.*, d.dept_name
+        FROM employee e
+        LEFT JOIN department d ON e.dept_id = d.id
+        WHERE e.leave_date IS NULL
+        ORDER BY e.id
+    </select>
+
+    <!-- 
+        ==================== 【动态SQL核心】多条件组合查询 ====================
+        技术点: 使用 <if> + <where> 实现条件动态拼接
+        
+        传入的Map可包含以下key:
+          - name -> 按姓名模糊搜索
+          - deptId -> 按部门精确筛选  
+          - position -> 按职位模糊搜索
+          
+        MyBatis会自动处理WHERE关键字和AND前缀问题
+        （如果所有条件都不满足，则不会生成WHERE子句）
+    -->
+    <select id="findByConditions" parameterType="map" resultMap="empResultMap">
+        SELECT e.*, d.dept_name
+        FROM employee e
+        LEFT JOIN department d ON e.dept_id = d.id
+        WHERE e.leave_date IS NULL
+        
+        <!-- 条件1: 姓名模糊匹配（使用LIKE和CONCAT防SQL注入） -->
+        <if test="name != null and name != ''">
+            AND e.name LIKE CONCAT('%', #{name}, '%')
+        </if>
+        
+        <!-- 条件2: 部门ID精确匹配 -->
+        <if test="deptId != null and deptId != 0">
+            AND e.dept_id = #{deptId}
+        </if>
+        
+        <!-- 条件3: 职位模糊匹配 -->
+        <if test="position != null and position != ''">
+            AND e.position LIKE CONCAT('%', #{position}, '%')
+        </if>
+        
+        ORDER BY e.id
+    </select>
+
+    <!-- 新增员工 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO employee (emp_no, name, password, dept_id, position, email, base_salary, entry_date)
+        VALUES (#{empNo}, #{name}, #{password}, #{deptId}, #{position}, #{email}, #{baseSalary}, #{entryDate})
+    </insert>
+
+    <!-- 更新员工信息（动态更新，只修改非空字段） -->
+    <update id="update">
+        UPDATE employee
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="deptId != null">dept_id = #{deptId},</if>
+            <if test="position != null">position = #{position},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="baseSalary != null">base_salary = #{baseSalary},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除员工（设置离职日期实现逻辑删除） -->
+    <update id="deleteById">
+        UPDATE employee SET leave_date = CURDATE() WHERE id = #{id} AND leave_date IS NULL
+    </update>
+
+    <!-- 查询指定部门的员工列表（主管查看团队用，只包含普通员工） -->
+    <select id="findByDeptId" resultMap="empResultMap">
+        SELECT e.*, d.dept_name
+        FROM employee e
+        LEFT JOIN department d ON e.dept_id = d.id
+        WHERE e.dept_id = #{deptId}
+          AND e.leave_date IS NULL
+          AND e.emp_no LIKE 'E%'
+        ORDER BY e.emp_no
+    </select>
+
+    <!-- 查询指定前缀下的最大工号（用于自动生成工号） -->
+    <select id="findMaxEmpNoByPrefix" resultType="string">
+        SELECT MAX(emp_no) FROM employee WHERE emp_no LIKE #{prefixLike}
+    </select>
+
+</mapper>

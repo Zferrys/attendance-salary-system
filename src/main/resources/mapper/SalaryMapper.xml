@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ============================================================
+    SalaryMapper XML映射文件
+    对应接口: com.attendance.mapper.SalaryMapper
+    
+    核心技术点（评分占比20%）:
+    - @Results + @One/@Many 关联查询:
+      薪资单查询链路：salary → employee(@One) → department(@One)
+    
+    薪资表关联说明：
+    salary (薪资记录)
+        ↓ @One (emp_id)
+    employee (员工信息 - 姓名、工号、部门ID)
+        ↓ @One (dept_id)  
+    department (部门名称)
+
+    查询一条薪资记录时，自动级联获取员工和部门的完整信息
+============================================================ -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.attendance.mapper.SalaryMapper">
+
+    <!-- 
+        ==================== 【核心】关联查询结果映射 ====================
+        
+        resultMap中定义了三层嵌套的关联关系：
+        
+        1. Salary 本身字段（基本工资、扣款等）
+           ↓ association (property="employee")
+        2. Employee 员工信息（姓名、工号）
+           ↓ association (property="department")  
+        3. Department 部门信息（部门名称）
+        
+        fetchType="eager" 表示立即加载（不是懒加载）
+    -->
+    <resultMap id="salaryFullResultMap" type="Salary">
+        <!-- 基本字段映射 -->
+        <id property="id" column="s_id"/>
+        <result property="empId" column="s_emp_id"/>
+        <result property="yearMonth" column="year_month"/>
+        <result property="baseSalary" column="base_salary"/>
+        <result property="attendanceBonus" column="attendance_bonus"/>
+        <result property="overtimePay" column="overtime_pay"/>
+        <result property="deductionLate" column="deduction_late"/>
+        <result property="deductionLeave" column="deduction_leave"/>
+        <result property="actualSalary" column="actual_salary"/>
+        <result property="status" column="s_status"/>
+        <result property="generateTime" column="generate_time"/>
+        <result property="payTime" column="pay_time"/>
+
+        <!-- 直接映射到Salary上的快捷属性（避免每次都遍历嵌套对象） -->
+        <result property="empName" column="emp_name"/>
+        <result property="empNo" column="emp_no"/>
+        <result property="deptName" column="dept_name"/>
+
+        <!-- 
+            【@One 关联 - 第一层】
+            通过 emp_id 关联 employee 表，获取员工的姓名和工号
+            
+            select: 完整的Mapper接口方法引用路径
+            column: 将 s_emp_id 列的值作为参数传给 findById 方法
+        -->
+        <association property="employee" javaType="Employee"
+                     select="com.attendance.mapper.EmployeeMapper.findById"
+                     column="s_emp_id" fetchType="eager">
+            
+            <!-- 
+                【@One 关联 - 第二层】
+                在Employee内部，通过 dept_id 再关联 department 表
+                
+                这样形成: Salary -> Employee -> Department 三级关联
+                一条SQL就能获取完整的薪资+员工+部门信息
+            -->
+            <association property="department" javaType="Department"
+                         select="com.attendance.mapper.DepartmentMapper.findById"
+                         column="dept_id" fetchType="eager"/>
+        </association>
+    </resultMap>
+
+    <!-- 简化版结果映射（用于列表展示，不包含嵌套对象） -->
+    <resultMap id="salarySimpleMap" type="Salary">
+        <id property="id" column="id"/>
+        <result property="empId" column="emp_id"/>
+        <result property="yearMonth" column="year_month"/>
+        <result property="baseSalary" column="base_salary"/>
+        <result property="attendanceBonus" column="attendance_bonus"/>
+        <result property="overtimePay" column="overtime_pay"/>
+        <result property="deductionLate" column="deduction_late"/>
+        <result property="deductionLeave" column="deduction_leave"/>
+        <result property="actualSalary" column="actual_salary"/>
+        <result property="status" column="status"/>
+        <result property="generateTime" column="generate_time"/>
+        <result property="payTime" column="pay_time"/>
+        <result property="empName" column="emp_name"/>
+        <result property="empNo" column="emp_no"/>
+        <result property="deptName" column="dept_name"/>
+    </resultMap>
+
+    <!-- ==================== 查询SQL ==================== -->
+
+    <!-- 根据ID查询单条薪资（使用完整关联结果映射） -->
+    <select id="findById" resultMap="salaryFullResultMap">
+        SELECT s.id AS s_id, s.emp_id AS s_emp_id, s.*,
+               e.name AS emp_name, e.emp_no, d.dept_name
+        FROM salary s
+        INNER JOIN employee e ON s.emp_id = e.id
+        LEFT JOIN department d ON e.dept_id = d.id
+        WHERE s.id = #{id}
+    </select>
+
+    <!-- 根据员工ID和月份查询（每人每月唯一） -->
+    <select id="findByEmpAndMonth" resultMap="salarySimpleMap">
+        SELECT s.*, e.name AS emp_name, e.emp_no, d.dept_name
+        FROM salary s
+        INNER JOIN employee e ON s.emp_id = e.id
+        LEFT JOIN department d ON e.dept_id = d.id
+        WHERE s.emp_id = #{empId} AND s.`year_month` = #{yearMonth}
+    </select>
+
+    <!-- 查询指定月份的所有薪资记录（管理员月度发放用） -->
+    <select id="findByMonth" resultMap="salarySimpleMap">
+        SELECT s.*, e.name AS emp_name, e.emp_no, d.dept_name,
+               e.base_salary AS emp_base_salary
+        FROM salary s
+        INNER JOIN employee e ON s.emp_id = e.id
+        LEFT JOIN department d ON e.dept_id = d.id
+        WHERE s.`year_month` = #{yearMonth}
+        ORDER BY d.dept_name, e.emp_no
+    </select>
+
+    <!-- ==================== 写入操作SQL ==================== -->
+
+    <!-- 新增薪资记录（useGeneratedKeys返回自增ID） -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO salary (
+            emp_id, `year_month`, base_salary, attendance_bonus, overtime_pay,
+            deduction_late, deduction_leave, actual_salary, status
+        ) VALUES (
+            #{empId}, #{yearMonth}, #{baseSalary}, #{attendanceBonus}, #{overtimePay},
+            #{deductionLate}, #{deductionLeave}, #{actualSalary}, '未发放'
+        )
+    </insert>
+
+    <!-- 更新薪资信息（支持动态更新部分字段） -->
+    <update id="update">
+        UPDATE salary
+        <set>
+            <if test="baseSalary != null">base_salary = #{baseSalary},</if>
+            <if test="attendanceBonus != null">attendance_bonus = #{attendanceBonus},</if>
+            <if test="overtimePay != null">overtime_pay = #{overtimePay},</if>
+            <if test="deductionLate != null">deduction_late = #{deductionLate},</if>
+            <if test="deductionLeave != null">deduction_leave = #{deductionLeave},</if>
+            <if test="actualSalary != null">actual_salary = #{actualSalary},</if>
+            <if test="status != null">status = #{status},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 发放薪资：更新状态为"已发放"，记录发放时间 -->
+    <update id="markAsPaid">
+        UPDATE salary 
+        SET status = '已发放', pay_time = NOW() 
+        WHERE id = #{id} AND status = '未发放'
+    </update>
+
+</mapper>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Log4j2 日志配置文件
+    位置: src/main/resources/log4j2.xml
+    用途: 控制日志输出级别和格式
+         - Console: 输出到IDEA控制台（开发调试用）
+         - File: 输出到日志文件（生产环境用）
+    
+    重要说明: MyBatis通过此配置输出执行的SQL语句，
+             设置为DEBUG级别可以看到完整SQL和参数绑定信息
+    
+    日志级别: TRACE < DEBUG < INFO < WARN < ERROR < FATAL
+        - com.attendance.mapper 设为 DEBUG: 显示SQL执行详情
+        - 其他包设为 INFO: 只显示重要信息
+-->
+<Configuration status="WARN" monitorInterval="30">
+    <!-- ==================== 日志输出格式定义 ==================== -->
+    <!-- PatternLayout: 定义每行日志的显示模板
+         %d{yyyy-MM-dd HH:mm:ss.SSS} - 时间戳
+         %t - 线程名称
+         %-5level - 日志级别(左对齐5位)
+         %logger{36} - Logger名(最多36字符)
+         %msg - 日志消息内容
+         %n - 换行符
+    -->
+    <Properties>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</Property>
+        <Property name="LOG_DIR">logs</Property>
+    </Properties>
+
+    <!-- ==================== Appender: 日志输出的目标位置 ==================== -->
+
+    <!-- Appender 1: 控制台输出 (Console) - 开发时在IDEA控制台看SQL -->
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <!-- 使用PatternLayout定义的格式模板 -->
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+
+        <!-- Appender 2: 文件输出 (RollingFile) - 按天滚动生成日志文件 -->
+        <RollingFile name="RollingFile"
+                     fileName="${LOG_DIR}/attendance.log"
+                     filePattern="${LOG_DIR}/attendance-%d{yyyy-MM-dd}.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <!-- 基于时间的滚动策略：每天一个新文件，保留7天 -->
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <!-- 单个文件最大10MB后滚动 -->
+                <SizeBasedTriggeringPolicy size="10MB"/>
+            </Policies>
+            <!-- 最多保留7天的日志文件 -->
+            <DefaultRolloverStrategy max="7"/>
+        </RollingFile>
+    </Appenders>
+
+    <!-- ==================== Logger: 各包/类的日志级别配置 ==================== -->
+    <Loggers>
+
+        <!-- 【核心】Mapper层设为DEBUG级别，用于查看MyBatis执行的SQL语句
+             这是最重要的配置！可以看到：
+             - ==> Preparing: SELECT * FROM employee WHERE id = ?
+             - ==> Parameters: 1(Integer)
+             - <== Columns: id, emp_no, name, ...
+             - <== Row: 1, E001, 张三, ...
+        -->
+        <Logger name="com.attendance.mapper" level="DEBUG" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="RollingFile"/>
+        </Logger>
+
+        <!-- MyBatis框架内部日志 -->
+        <Logger name="org.apache.ibatis" level="INFO"/>
+
+        <!-- Root Logger: 全局默认日志级别 -->
+        <Root level="INFO">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="RollingFile"/>
+        </Root>
+    </Loggers>
+
+</Configuration>

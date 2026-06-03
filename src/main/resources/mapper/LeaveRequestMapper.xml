@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ============================================================
+    LeaveRequestMapper XML映射文件
+    对应接口: com.attendance.mapper.LeaveRequestMapper
+============================================================ -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.attendance.mapper.LeaveRequestMapper">
+
+    <!-- 结果映射：含申请人姓名和审批人姓名 -->
+    <resultMap id="leaveResultMap" type="LeaveRequest">
+        <id property="id" column="id"/>
+        <result property="empId" column="emp_id"/>
+        <result property="empName" column="emp_name"/>
+        <result property="leaveType" column="leave_type"/>
+        <result property="startDate" column="start_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="days" column="days"/>
+        <result property="reason" column="reason"/>
+        <result property="status" column="status"/>
+        <result property="approverId" column="approver_id"/>
+        <result property="approveTime" column="approve_time"/>
+        <result property="approverName" column="approver_name"/>
+    </resultMap>
+
+    <!-- 根据ID查询（JOIN获取姓名） -->
+    <select id="findById" resultMap="leaveResultMap">
+        SELECT lr.*,
+               e1.name AS emp_name,
+               e2.name AS approver_name
+        FROM leave_request lr
+        LEFT JOIN employee e1 ON lr.emp_id = e1.id
+        LEFT JOIN employee e2 ON lr.approver_id = e2.id
+        WHERE lr.id = #{id}
+    </select>
+
+    <!-- 
+        ==================== 【动态SQL】请假多条件查询 ====================
+        支持：按员工、状态、审批人、类型等多维度筛选
+        使用<if>标签动态拼接WHERE条件
+    -->
+    <select id="findByConditions" parameterType="map" resultMap="leaveResultMap">
+        SELECT lr.*,
+               e1.name AS emp_name,
+               e2.name AS approver_name,
+               d.dept_name
+        FROM leave_request lr
+        INNER JOIN employee e1 ON lr.emp_id = e1.id
+        LEFT JOIN department d ON e1.dept_id = d.id
+        LEFT JOIN employee e2 ON lr.approver_id = e2.id
+        WHERE 1=1
+
+        <!-- 按员工ID筛选 -->
+        <if test="empId != null">
+            AND lr.emp_id = #{empId}
+        </if>
+        <!-- 按状态精确匹配（待审批/已批准/已拒绝/已撤销） -->
+        <if test="status != null and status != ''">
+            AND lr.status = #{status}
+        </if>
+        <!-- 按审批人筛选（主管查看自己审批的记录） -->
+        <if test="approverId != null">
+            AND lr.approver_id = #{approverId}
+        </if>
+        <!-- 按请假类型筛选 -->
+        <if test="leaveType != null and leaveType != ''">
+            AND lr.leave_type = #{leaveType}
+        </if>
+        <!-- 按日期范围筛选 -->
+        <if test="startDate != null">
+            AND lr.start_date &gt;= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND lr.end_date &lt;= #{endDate}
+        </if>
+
+        ORDER BY lr.id DESC
+    </select>
+
+    <!-- 新增请假申请 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO leave_request (emp_id, leave_type, start_date, end_date, days, reason, status)
+        VALUES (#{empId}, #{leaveType}, #{startDate}, #{endDate}, #{days}, #{reason}, '待审批')
+    </insert>
+
+    <!-- 主管审批操作：更新状态+审批人+时间 -->
+    <update id="approve">
+        UPDATE leave_request
+        SET status = #{status},
+            approver_id = #{approverId},
+            approve_time = NOW()
+        WHERE id = #{id} AND status = '待审批'
+    </update>
+
+    <!-- 撤销请假（仅允许撤销待审批状态的） -->
+    <update id="cancel">
+        UPDATE leave_request SET status = '已撤销'
+        WHERE id = #{id} AND status = '待审批'
+    </update>
+
+</mapper>

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ============================================================
+    MyBatis 核心配置文件
+    位置: src/main/resources/mybatis-config.xml
+    用途: 配置MyBatis全局行为，包括：
+          - 数据库连接环境（通过Druid连接池）
+          - 类型别名（简化Mapper XML中的类型引用）
+          - Mapper映射文件位置
+          - 日志实现（使用LOG4J2输出SQL日志）
+    注意: 此文件是MyBatis的入口配置，应用启动时加载一次
+============================================================ -->
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+    <!-- 引入外部数据库属性文件（Druid配置） -->
+    <properties resource="druid.properties"/>
+
+    <!-- ============================================================
+         全局设置（settings）
+         控制MyBatis运行时的各种行为特性
+    ============================================================ -->
+    <settings>
+        <!-- 开启驼峰命名自动映射: 数据库下划线字段 <-> Java驼峰属性
+             例如: base_salary (DB) <-> baseSalary (Java)
+             这样可以避免在SQL中使用AS别名 -->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+        <!-- 开启二级缓存(默认关闭) - 本项目暂不使用 -->
+        <!-- <setting name="cacheEnabled" value="true"/> -->
+        <!-- 延迟加载开关 -->
+        <!-- <setting name="lazyLoadingEnabled" value="true"/> -->
+        
+        <!-- 日志实现指定为 LOG4J2（重要：用于输出执行的SQL语句和参数） -->
+        <setting name="logImpl" value="LOG4J2"/>
+    </settings>
+
+    <!-- ============================================================
+         类型别名（typeAliases）
+         为Java类设置简短的别名，在Mapper XML中可以直接使用类名
+         不需要再写完整的包名路径 com.attendance.entity.Xxx
+    ============================================================ -->
+    <typeAliases>
+        <!-- 方式一：单独为每个实体类起别名（推荐） -->
+        <typeAlias type="com.attendance.entity.Department" alias="Department"/>
+        <typeAlias type="com.attendance.entity.Employee" alias="Employee"/>
+        <typeAlias type="com.attendance.entity.AttendRecord" alias="AttendRecord"/>
+        <typeAlias type="com.attendance.entity.LeaveRequest" alias="LeaveRequest"/>
+        <typeAlias type="com.attendance.entity.Salary" alias="Salary"/>
+
+        <!-- 方式二：使用package标签批量扫描（会使用类名首字母小写作为别名）
+             如 Employee -> employee, Department -> department
+        <package name="com.attendance.entity"/>
+        -->
+    </typeAliases>
+
+    <!-- ============================================================
+         环境配置（environments）
+         定义数据库连接信息，可切换开发/测试/生产环境
+    ============================================================ -->
+    <!-- default属性指定默认使用的环境ID -->
+    <environments default="development">
+        <!-- 开发环境配置 -->
+        <environment id="development">
+            <!-- 事务管理器: JDBC表示使用原生JDBC的事务管理（手动commit/rollback） -->
+            <transactionManager type="JDBC"/>
+            <!-- 数据源配置:
+                 使用 Druid 连接池管理数据库连接，
+                 通过 POOLED 表示使用连接池模式（非每次新建连接）
+            -->
+            <dataSource type="POOLED">
+                <!-- 从 druid.properties 属性文件中读取连接参数 -->
+                <property name="driver" value="${driverClassName}"/>
+                <property name="url" value="${url}"/>
+                <property name="username" value="${username}"/>
+                <property name="password" value="${password}"/>
+                
+                <!-- 连接池额外参数（可选，增强性能） -->
+                <property name="poolMaximumActiveConnections" value="20"/>
+                <property name="poolMaximumIdleConnections" value="5"/>
+                <property name="poolMaximumCheckoutTime" value="20000"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <!-- ============================================================
+         Mapper 映射器注册（mappers）
+         告诉MyBatis去哪里找到SQL映射文件
+         每个mapper XML对应一个DAO/Mapper接口
+    ============================================================ -->
+    <mappers>
+        <!-- 方式一：逐个注册每个Mapper XML文件 -->
+        <mapper resource="mapper/DepartmentMapper.xml"/>
+        <mapper resource="mapper/EmployeeMapper.xml"/>
+        <mapper resource="mapper/AttendRecordMapper.xml"/>
+        <mapper resource="mapper/LeaveRequestMapper.xml"/>
+        <mapper resource="mapper/SalaryMapper.xml"/>
+    </mappers>
+
+</configuration>

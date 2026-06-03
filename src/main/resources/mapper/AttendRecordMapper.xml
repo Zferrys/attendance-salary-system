@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ============================================================
+    AttendRecordMapper XML映射文件
+    对应接口: com.attendance.mapper.AttendRecordMapper
+    
+    核心技术点:
+    1. 动态SQL (@SelectProvider) - 考勤多条件组合查询
+    2. 打卡逻辑判断 - 通过查询决定INSERT或UPDATE
+============================================================ -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.attendance.mapper.AttendRecordMapper">
+
+    <!-- 基础结果映射（含员工姓名关联） -->
+    <resultMap id="recordResultMap" type="AttendRecord">
+        <id property="id" column="id"/>
+        <result property="empId" column="emp_id"/>
+        <result property="empName" column="emp_name"/>
+        <result property="workDate" column="work_date"/>
+        <result property="checkInTime" column="check_in_time"/>
+        <result property="checkOutTime" column="check_out_time"/>
+        <result property="status" column="status"/>
+        <result property="workHours" column="work_hours"/>
+    </resultMap>
+
+    <!-- ==================== 核心查询SQL ==================== -->
+
+    <!-- 查询指定员工+日期的考勤记录（用于打卡重复判断） -->
+    <select id="findByEmpAndDate" resultMap="recordResultMap">
+        SELECT ar.*, e.name AS emp_name
+        FROM attend_record ar
+        LEFT JOIN employee e ON ar.emp_id = e.id
+        WHERE ar.emp_id = #{empId} AND ar.work_date = #{workDate}
+    </select>
+
+    <!-- 
+        ==================== 【动态SQL核心】考勤多条件组合查询 ====================
+        技术点: 使用 @SelectProvider 注解引用 AttendRecordProvider 类生成动态SQL
+        
+        此方法支持灵活的条件组合：
+        - 可只查某员工的记录
+        - 可只查某个日期范围
+        - 可只查某种状态（如所有"迟到"的记录）
+        - 可按部门筛选（通过JOIN employee表）
+        
+        实际SQL由AttendRecordProvider类动态拼接
+    -->
+    <select id="findByConditions" parameterType="map" resultMap="recordResultMap">
+        SELECT ar.*, e.name AS emp_name, d.dept_name
+        FROM attend_record ar
+        INNER JOIN employee e ON ar.emp_id = e.id
+        LEFT JOIN department d ON e.dept_id = d.id
+        WHERE 1=1
+
+        <!-- 条件1：指定员工ID -->
+        <if test="empId != null">
+            AND ar.emp_id = #{empId}
+        </if>
+        <!-- 条件2：日期范围-开始 -->
+        <if test="startDate != null">
+            AND ar.work_date &gt;= #{startDate}
+        </if>
+        <!-- 条件3：日期范围-结束 -->
+        <if test="endDate != null">
+            AND ar.work_date &lt;= #{endDate}
+        </if>
+        <!-- 条件4：考勤状态筛选（正常/迟到/早退/缺勤） -->
+        <if test="status != null and status != ''">
+            AND ar.status = #{status}
+        </if>
+        <!-- 条件5：部门筛选 -->
+        <if test="deptId != null">
+            AND e.dept_id = #{deptId}
+        </if>
+
+        ORDER BY ar.work_date DESC, ar.emp_id
+    </select>
+
+    <!-- 查询员工指定月份的所有考勤记录（用于月度日历展示） -->
+    <select id="findByEmpAndMonth" resultMap="recordResultMap">
+        SELECT * FROM attend_record 
+        WHERE emp_id = #{empId} 
+          AND DATE_FORMAT(work_date, '%Y-%m') = #{yearMonth}
+        ORDER BY work_date
+    </select>
+
+    <!-- 统计各状态天数（用于薪资计算和考勤汇总展示） -->
+    <select id="countByStatus" resultType="map">
+        SELECT
+            SUM(CASE WHEN status='正常' THEN 1 ELSE 0 END) AS normalDays,
+            SUM(CASE WHEN status='迟到' THEN 1 ELSE 0 END) AS lateDays,
+            SUM(CASE WHEN status='早退' THEN 1 ELSE 0 END) AS earlyDays,
+            SUM(CASE WHEN status='缺勤' THEN 1 ELSE 0 END) AS absentDays,
+            COUNT(*) AS totalDays
+        FROM attend_record
+        WHERE emp_id = #{empId}
+          AND DATE_FORMAT(work_date, '%Y-%m') = #{yearMonth}
+    </select>
+
+    <!-- ==================== 写入操作SQL ==================== -->
+
+    <!-- 新增考勤记录（首次打卡时使用，如上班签到） -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO attend_record (emp_id, work_date, check_in_time, check_out_time, status, work_hours)
+        VALUES (#{empId}, #{workDate}, #{checkInTime}, #{checkOutTime}, #{status}, #{workHours})
+    </insert>
+
+    <!-- 更新考勤记录（第二次打卡时使用，如下班签退） -->
+    <update id="update">
+        UPDATE attend_record
+        <set>
+            <if test="checkInTime != null">check_in_time = #{checkInTime},</if>
+            <if test="checkOutTime != null">check_out_time = #{checkOutTime},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="workHours != null">work_hours = #{workHours},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+</mapper>

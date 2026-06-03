@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ============================================================
+    DepartmentMapper XML映射文件
+    对应接口: com.attendance.mapper.DepartmentMapper
+    命名空间: 必须与Mapper接口的全限定名一致
+    
+    用途: 定义操作department表的所有SQL语句
+============================================================ -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.attendance.mapper.DepartmentMapper">
+
+    <!-- 结果映射: 将数据库字段与Java对象属性对应
+         由于开启了 mapUnderscoreToCamelCase，下划线字段自动映射驼峰属性
+         如 dept_name -> deptName
+    -->
+    <resultMap id="deptResultMap" type="Department">
+        <id property="id" column="id"/>
+        <result property="deptName" column="dept_name"/>
+    </resultMap>
+
+    <!-- ==================== 查询SQL ==================== -->
+
+    <!-- 查询所有部门列表 -->
+    <select id="findAll" resultMap="deptResultMap">
+        SELECT id, dept_name FROM department ORDER BY id
+    </select>
+
+    <!-- 根据ID查询部门 -->
+    <select id="findById" resultMap="deptResultMap">
+        SELECT id, dept_name FROM department WHERE id = #{id}
+    </select>
+
+    <!-- 根据名称查询部门（模糊搜索） -->
+    <select id="findByName" resultMap="deptResultMap">
+        SELECT id, dept_name FROM department 
+        WHERE dept_name LIKE CONCAT('%', #{deptName}, '%')
+    </select>
+
+    <!-- ==================== 插入SQL ==================== -->
+
+    <!-- 新增部门（useGeneratedKeys返回自增主键） -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO department (dept_name) VALUES (#{deptName})
+    </insert>
+
+    <!-- ==================== 更新SQL ==================== -->
+
+    <!-- 更新部门信息 -->
+    <update id="update">
+        UPDATE department SET dept_name = #{deptName} WHERE id = #{id}
+    </update>
+
+    <!-- ==================== 删除SQL ==================== -->
+
+    <!-- 根据ID删除部门 -->
+    <delete id="deleteById">
+        DELETE FROM department WHERE id = #{id}
+    </delete>
+
+</mapper>
