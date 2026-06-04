@@ -16,6 +16,23 @@
     .tag-admin { background: #fee2e2; color: #991b1b; }
     .tag-manager { background: #fef3c7; color: #92400e; }
     .tag-emp { background: #dbeafe; color: #1e40af; }
+    .btn-outline {
+        background: #fff;
+        color: #6b7280;
+        border: 1.5px dashed #d1d5db;
+        text-decoration: none;
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-outline:hover {
+        border-color: #3b82f6;
+        color: #3b82f6;
+        background: #eff6ff;
+    }
+
 </style>
 </head>
 <body>
@@ -48,6 +65,7 @@
         <button type="submit" class="btn btn-primary btn-sm" form="searchForm">&#128269; 搜索</button>
         <a href="${pageContext.request.contextPath}/admin?action=empAdd" class="btn btn-success btn-sm">&#10133; 添加员工</a>
         <button type="button" class="btn btn-info btn-sm" onclick="document.getElementById('importFile').click()">&#128229; 批量导入</button>
+        <a href="${pageContext.request.contextPath}/admin?action=exportTemplate" class="btn btn-outline btn-sm">&#128196; 下载模板</a>
         <form id="importForm" action="${pageContext.request.contextPath}/admin?action=empImport" method="post" enctype="multipart/form-data" style="display:none;">
             <input type="file" id="importFile" name="file" accept=".xlsx,.xls" onchange="document.getElementById('importForm').submit();showLoading('正在导入...')">
         </form>

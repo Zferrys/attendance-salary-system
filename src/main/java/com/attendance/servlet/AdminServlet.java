@@ -65,6 +65,7 @@ public class AdminServlet extends HttpServlet {
                 case "salaryList":     salaryList(req, resp); break;
                 case "salaryPay":      salaryPay(req, resp); break;
                 case "salaryReport":   salaryReport(req, resp); break;
+                case "exportTemplate": exportTemplate(req, resp); break;
                 default:               dashboard(req, resp); break;
             }
         } catch (Exception e) {
@@ -679,6 +680,96 @@ public class AdminServlet extends HttpServlet {
         String newEmpNo = prefix + String.format("%03d", counter);
         prefixCounters.put(prefix, counter + 1);
         return newEmpNo;
+    }
+
+    /**
+     * 导出批量导入员工的 Excel 模板
+     * 生成一个包含表头和示例数据的 .xlsx 文件供用户下载参考
+     */
+    private void exportTemplate(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException {
+        // 使用 Apache POI 生成 Excel
+        org.apache.poi.xssf.usermodel.XSSFWorkbook workbook = new org.apache.poi.xssf.usermodel.XSSFWorkbook();
+        org.apache.poi.xssf.usermodel.XSSFSheet sheet = workbook.createSheet("员工导入模板");
+
+        // ---- 样式定义 ----
+        org.apache.poi.xssf.usermodel.XSSFCellStyle headerStyle = workbook.createCellStyle();
+        headerStyle.setFillForegroundColor(new org.apache.poi.xssf.usermodel.XSSFColor(new byte[]{(byte)68, (byte)114, (byte)196}, null));
+        headerStyle.setFillPattern(org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND);
+        headerStyle.setAlignment(org.apache.poi.ss.usermodel.HorizontalAlignment.CENTER);
+        headerStyle.setVerticalAlignment(org.apache.poi.ss.usermodel.VerticalAlignment.CENTER);
+        org.apache.poi.xssf.usermodel.XSSFFont headerFont = workbook.createFont();
+        headerFont.setColor(new org.apache.poi.xssf.usermodel.XSSFColor(new byte[]{(byte)255, (byte)255, (byte)255}, null));
+        headerFont.setBold(true);
+        headerFont.setFontHeightInPoints((short) 12);
+        headerStyle.setFont(headerFont);
+
+        org.apache.poi.xssf.usermodel.XSSFCellStyle exampleStyle = workbook.createCellStyle();
+        exampleStyle.setFillForegroundColor(new org.apache.poi.xssf.usermodel.XSSFColor(new byte[]{(byte)226, (byte)239, (byte)218}, null));
+        exampleStyle.setFillPattern(org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND);
+        exampleStyle.setAlignment(org.apache.poi.ss.usermodel.HorizontalAlignment.CENTER);
+        exampleStyle.setVerticalAlignment(org.apache.poi.ss.usermodel.VerticalAlignment.CENTER);
+        org.apache.poi.xssf.usermodel.XSSFFont exampleFont = workbook.createFont();
+        exampleFont.setColor(new org.apache.poi.xssf.usermodel.XSSFColor(new byte[]{(byte)55, (byte)86, (byte)35}, null));
+        exampleFont.setFontHeightInPoints((short) 10);
+        exampleStyle.setFont(exampleFont);
+
+        org.apache.poi.xssf.usermodel.XSSFCellStyle tipStyle = workbook.createCellStyle();
+        org.apache.poi.xssf.usermodel.XSSFFont tipFont = workbook.createFont();
+        tipFont.setColor(new org.apache.poi.xssf.usermodel.XSSFColor(new byte[]{(byte)156, (byte)163, (byte)175}, null));
+        tipFont.setItalic(true);
+        tipFont.setFontHeightInPoints((short) 9);
+        tipStyle.setFont(tipFont);
+        tipStyle.setVerticalAlignment(org.apache.poi.ss.usermodel.VerticalAlignment.CENTER);
+
+        // ---- 说明行（第1行）----
+        org.apache.poi.xssf.usermodel.XSSFRow tipRow = sheet.createRow(0);
+        org.apache.poi.xssf.usermodel.XSSFCell tipCell = tipRow.createCell(0);
+        tipCell.setCellValue("说明：表头为第2行，数据从第3行开始填写。角色：E=员工 M=主管 A=管理员。部门ID：1=技术部 2=市场部 3=财务部 4=人事部 5=运营部。工号由系统自动生成，无需填写。");
+        tipCell.setCellStyle(tipStyle);
+        sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 7));
+
+        // ---- 表头行（第2行）----
+        org.apache.poi.xssf.usermodel.XSSFRow headerRow = sheet.createRow(1);
+        String[] headers = {"角色", "姓名", "密码", "部门ID", "职位", "基本工资", "入职日期", "邮箱(选填)"};
+        for (int i = 0; i < headers.length; i++) {
+            org.apache.poi.xssf.usermodel.XSSFCell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(headerStyle);
+        }
+
+        // ---- 示例数据（第3行起）----
+        Object[][] examples = {
+            {"E", "张三", "123456", 1, "Java开发工程师", 8000.00, "2025-03-01", "zhangsan@example.com"},
+            {"M", "李四", "123456", 1, "技术主管", 15000.00, "2024-06-15", "lisi@example.com"},
+            {"A", "管理员", "123456", 1, "系统管理员", 12000.00, "2024-01-01", ""},
+            {"E", "王五", "123456", 2, "市场专员", 6000.00, "2025-01-10", ""},
+            {"E", "赵六", "123456", 3, "会计", 7000.00, "2024-09-01", "zhaoliu@example.com"},
+        };
+        for (int i = 0; i < examples.length; i++) {
+            org.apache.poi.xssf.usermodel.XSSFRow row = sheet.createRow(i + 2);
+            for (int j = 0; j < examples[i].length; j++) {
+                org.apache.poi.xssf.usermodel.XSSFCell cell = row.createCell(j);
+                if (examples[i][j] instanceof Number) {
+                    cell.setCellValue(((Number) examples[i][j]).doubleValue());
+                } else {
+                    cell.setCellValue(String.valueOf(examples[i][j]));
+                }
+                cell.setCellStyle(exampleStyle);
+            }
+        }
+
+        // ---- 列宽调整 ----
+        int[] widths = {8, 10, 10, 10, 16, 12, 14, 24};
+        for (int i = 0; i < widths.length; i++) {
+            sheet.setColumnWidth(i, widths[i] * 256);
+        }
+
+        // ---- 输出 ----
+        resp.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        resp.setHeader("Content-Disposition", "attachment; filename=employee_import_template.xlsx");
+        workbook.write(resp.getOutputStream());
+        workbook.close();
     }
 
     // ==================== 工具方法 ====================
