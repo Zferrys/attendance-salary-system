@@ -21,9 +21,9 @@
 
 <div class="main-container">
     <div class="breadcrumb">
-        <a href="${pageContext.request.contextPath}/manager?action=dashboard">&#127968; 主管首页</a>
+        <a href="${pageContext.request.contextPath}/mgr?action=dashboard">&#127968; 主管首页</a>
         <span class="separator">&#8250;</span>
-        <a href="${pageContext.request.contextPath}/manager?action=empList">团队管理</a>
+        <a href="${pageContext.request.contextPath}/mgr?action=empList">团队管理</a>
         <span class="separator">&#8250;</span>
         <span class="current">编辑员工</span>
     </div>
@@ -33,7 +33,7 @@
     <div class="card form-card">
         <div class="card-header">&#9998; 编辑员工信息 - ${editEmp.name}（${editEmp.empNo}）</div>
         <div class="card-body">
-            <form action="${pageContext.request.contextPath}/manager" method="post" id="empForm">
+            <form action="${pageContext.request.contextPath}/mgr" method="post" id="empForm">
                 <input type="hidden" name="action" value="empUpdate">
                 <input type="hidden" name="id" value="${editEmp.id}">
                 
@@ -92,7 +92,7 @@
                 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">&#128190; 保存修改</button>
-                    <a href="${pageContext.request.contextPath}/manager?action=empList" class="btn btn-outline">返回列表</a>
+                    <a href="${pageContext.request.contextPath}/mgr?action=empList" class="btn btn-outline">返回列表</a>
                 </div>
             </form>
         </div>

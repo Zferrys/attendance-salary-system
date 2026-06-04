@@ -31,7 +31,7 @@
 <div class="main-container">
     <!-- 面包屑导航 -->
     <div class="breadcrumb">
-        <a href="${pageContext.request.contextPath}/manager?action=dashboard">&#127968; 主管首页</a>
+        <a href="${pageContext.request.contextPath}/mgr?action=dashboard">&#127968; 主管首页</a>
         <span class="separator">&#8250;</span>
         <span class="current">请假审批</span>
     </div>
@@ -40,7 +40,7 @@
 
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
         <h3 style="font-size:18px;font-weight:700;color:#1f2937;">待审批的请假申请 <span style="font-size:14px;color:#6b7280;font-weight:400;">(${leaveList.size()} 条)</span></h3>
-        <a href="${pageContext.request.contextPath}/manager?action=dashboard" class="btn btn-outline btn-sm">&#8592; 返回首页</a>
+        <a href="${pageContext.request.contextPath}/mgr?action=dashboard" class="btn btn-outline btn-sm">&#8592; 返回首页</a>
     </div>
 
     <c:forEach items="${leaveList}" var="l">
@@ -65,13 +65,13 @@
                 </div>
             </div>
             <div class="review-actions">
-                <form action="${pageContext.request.contextPath}/manager" method="post" style="display:inline;">
+                <form action="${pageContext.request.contextPath}/mgr" method="post" style="display:inline;">
                     <input type="hidden" name="action" value="approveLeave">
                     <input type="hidden" name="id" value="${l.id}">
                     <input type="hidden" name="status" value="已拒绝">
                     <button type="submit" class="btn btn-danger btn-sm" data-confirm="确定拒绝 ${l.empName} 的请假申请？">&#10060; 拒绝</button>
                 </form>
-                <form action="${pageContext.request.contextPath}/manager" method="post" style="display:inline;">
+                <form action="${pageContext.request.contextPath}/mgr" method="post" style="display:inline;">
                     <input type="hidden" name="action" value="approveLeave">
                     <input type="hidden" name="id" value="${l.id}">
                     <input type="hidden" name="status" value="已批准">

@@ -22,6 +22,12 @@
     .history-item:hover { background: #eff6ff; }
     .history-item .month { font-weight: 600; color: #1f2937; }
     .history-item .amount { font-weight: 700; color: #0d9e6c; }
+    @media print {
+        .navbar, .breadcrumb, .filter-bar, .rule-box, .salary-footer button { display: none !important; }
+        .main-container { padding: 0 !important; }
+        .salary-card { box-shadow: none !important; border: 2px solid #1a73e8 !important; page-break-inside: avoid; }
+        body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
 </style>
 </head>
 <body>

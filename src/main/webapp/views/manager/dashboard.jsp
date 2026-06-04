@@ -43,7 +43,7 @@
 <div class="main-container">
     <!-- 面包屑导航 -->
     <div class="breadcrumb">
-        <a href="${pageContext.request.contextPath}/manager?action=dashboard">&#127968; 主管首页</a>
+        <a href="${pageContext.request.contextPath}/mgr?action=dashboard">&#127968; 主管首页</a>
         <span class="separator">&#8250;</span>
         <span class="current">工作台</span>
     </div>
@@ -79,28 +79,28 @@
 
     <!-- 功能入口 -->
     <div class="feature-grid">
-        <a href="${pageContext.request.contextPath}/manager?action=leaveReview" class="feature-card">
+        <a href="${pageContext.request.contextPath}/mgr?action=leaveReview" class="feature-card">
             <div class="feature-icon" style="background:linear-gradient(135deg,#dbeafe,#eff6ff); color:#1a73e8;">&#9989;</div>
             <div class="feature-info">
                 <h3>审批请假申请 <c:if test="${pendingCount > 0}"><span class="pending-badge">${pendingCount}</span></c:if></h3>
                 <p>查看并审批下属的请假申请，支持批准或拒绝操作</p>
             </div>
         </a>
-        <a href="${pageContext.request.contextPath}/manager?action=teamAttend" class="feature-card">
+        <a href="${pageContext.request.contextPath}/mgr?action=teamAttend" class="feature-card">
             <div class="feature-icon" style="background:linear-gradient(135deg,#d1fae5,#ecfdf5); color:#0d9e6c;">&#128202;</div>
             <div class="feature-info">
                 <h3>团队考勤统计</h3>
                 <p>查看部门成员的月度考勤情况，包括正常、迟到、早退、缺勤</p>
             </div>
         </a>
-        <a href="${pageContext.request.contextPath}/manager?action=empList" class="feature-card">
+        <a href="${pageContext.request.contextPath}/mgr?action=empList" class="feature-card">
             <div class="feature-icon" style="background:linear-gradient(135deg,#e0e7ff,#eef2ff); color:#4f46e5;">&#128101;</div>
             <div class="feature-info">
                 <h3>团队员工管理</h3>
                 <p>查看和管理部门内所有员工的详细信息</p>
             </div>
         </a>
-        <a href="${pageContext.request.contextPath}/manager?action=salaryView" class="feature-card">
+        <a href="${pageContext.request.contextPath}/mgr?action=salaryView" class="feature-card">
             <div class="feature-icon" style="background:linear-gradient(135deg,#fef3c7,#fffbeb); color:#f0a020;">&#128176;</div>
             <div class="feature-info">
                 <h3>我的薪资</h3>
@@ -112,7 +112,7 @@
     <!-- 最近待审批记录 -->
     <div class="card">
         <div class="card-header">最近待审批请假
-            <a href="${pageContext.request.contextPath}/manager?action=leaveReview" class="btn btn-outline btn-sm">查看全部</a>
+            <a href="${pageContext.request.contextPath}/mgr?action=leaveReview" class="btn btn-outline btn-sm">查看全部</a>
         </div>
         <div class="card-body">
             <c:forEach items="${pendingLeaves}" var="l">

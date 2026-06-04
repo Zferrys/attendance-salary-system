@@ -21,14 +21,14 @@ import java.util.Map;
  * 过滤规则:
  *   1. 登录页面 → 放行（无需登录）
  *   2. /employee/* → 需要普通员工或管理员登录
- *   3. /manager/* → 需要主管(M开头工号)或管理员(A开头工号)登录
+ *   3. /mgr/*       → 需要主管(M开头工号)或管理员(A开头工号)登录
  *   4. /admin/*    → 需要管理员(A开头工号)登录
  *
  * AJAX请求特殊处理:
  *   - 未登录时返回 JSON {url: "login.jsp"} 而非重定向页面
  */
 @WebFilter(filterName = "authFilter",
-           urlPatterns = {"/employee", "/manager", "/admin"})
+           urlPatterns = {"/employee", "/mgr", "/admin"})
 public class AuthFilter implements Filter {
 
     @Override
@@ -45,7 +45,7 @@ public class AuthFilter implements Filter {
         HttpServletResponse resp = (HttpServletResponse) response;
         HttpSession session = req.getSession();
         
-        String url = req.getServletPath(); // 如 /employee, /manager, /admin
+        String url = req.getServletPath(); // 如 /employee, /mgr, /admin
 
         // 获取当前登录用户
         Employee user = (Employee) session.getAttribute("currentUser");
@@ -66,7 +66,7 @@ public class AuthFilter implements Filter {
                 req.getRequestDispatcher("/views/common/login.jsp").forward(req, resp);
                 return;
             }
-        } else if (url.startsWith("/manager")) {
+        } else if (url.startsWith("/mgr")) {
             // 主管页面：M开头或A开头可访问
             if (!empNo.startsWith("M") && !empNo.startsWith("A")) {
                 req.setAttribute("errorMsg", "您没有主管面板访问权限！");

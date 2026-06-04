@@ -32,7 +32,7 @@
 <div class="main-container">
     <!-- 面包屑导航 -->
     <div class="breadcrumb">
-        <a href="${pageContext.request.contextPath}/manager?action=dashboard">&#127968; 主管首页</a>
+        <a href="${pageContext.request.contextPath}/mgr?action=dashboard">&#127968; 主管首页</a>
         <span class="separator">&#8250;</span>
         <span class="current">团队考勤</span>
     </div>
@@ -43,7 +43,7 @@
             <label>&#128197; 月份：</label><input type="month" name="yearMonth" value="${yearMonth}">
             <button class="btn btn-primary btn-sm">&#128269; 查询</button>
         </form>
-        <a href="${pageContext.request.contextPath}/manager?action=dashboard" class="btn btn-outline btn-sm">返回首页</a>
+        <a href="${pageContext.request.contextPath}/mgr?action=dashboard" class="btn btn-outline btn-sm">返回首页</a>
     </div>
 
     <div style="margin-bottom:16px;">
@@ -60,7 +60,7 @@
                         <div class="member-position">${m.position}</div>
                     </div>
                 </div>
-                <a href="${pageContext.request.contextPath}/manager?action=memberAttend&empId=${m.id}&yearMonth=${yearMonth}" class="btn btn-outline btn-sm">查看明细</a>
+                <a href="${pageContext.request.contextPath}/mgr?action=memberAttend&empId=${m.id}&yearMonth=${yearMonth}" class="btn btn-outline btn-sm">查看明细</a>
             </div>
             <div class="member-stats">
                 <div class="member-stat normal">

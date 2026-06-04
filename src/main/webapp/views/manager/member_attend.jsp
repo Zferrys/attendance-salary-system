@@ -68,9 +68,9 @@
 <div class="main-container">
     <!-- 面包屑导航 -->
     <div class="breadcrumb">
-        <a href="${pageContext.request.contextPath}/manager?action=dashboard">&#127968; 主管首页</a>
+        <a href="${pageContext.request.contextPath}/mgr?action=dashboard">&#127968; 主管首页</a>
         <span class="separator">&#8250;</span>
-        <a href="${pageContext.request.contextPath}/manager?action=teamAttend&yearMonth=${yearMonth}">团队考勤</a>
+        <a href="${pageContext.request.contextPath}/mgr?action=teamAttend&yearMonth=${yearMonth}">团队考勤</a>
         <span class="separator">&#8250;</span>
         <span class="current">${member.name} 的考勤</span>
     </div>
@@ -96,7 +96,7 @@
             <input type="month" name="yearMonth" value="${yearMonth}">
             <button type="submit" class="btn btn-primary btn-sm">&#128269; 查询</button>
         </form>
-        <a href="${pageContext.request.contextPath}/manager?action=teamAttend&yearMonth=${yearMonth}" class="btn btn-outline btn-sm">返回团队考勤</a>
+        <a href="${pageContext.request.contextPath}/mgr?action=teamAttend&yearMonth=${yearMonth}" class="btn btn-outline btn-sm">返回团队考勤</a>
     </div>
 
     <!-- 图例 -->
@@ -221,7 +221,7 @@ function submitAttendEdit() {
     var newStatus = document.getElementById('newAttendStatus').value;
     var form = document.createElement('form');
     form.method = 'post';
-    form.action = '${pageContext.request.contextPath}/manager';
+    form.action = '${pageContext.request.contextPath}/mgr';
     
     var actionInput = document.createElement('input');
     actionInput.type = 'hidden';

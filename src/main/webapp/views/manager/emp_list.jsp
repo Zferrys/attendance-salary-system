@@ -39,7 +39,7 @@
 
 <div class="main-container">
     <div class="breadcrumb">
-        <a href="${pageContext.request.contextPath}/manager?action=dashboard">&#127968; 主管首页</a>
+        <a href="${pageContext.request.contextPath}/mgr?action=dashboard">&#127968; 主管首页</a>
         <span class="separator">&#8250;</span>
         <span class="current">团队员工</span>
     </div>
@@ -49,7 +49,7 @@
 
     <div class="filter-bar">
         <span style="font-weight:600;">团队成员列表（共 ${teamMembers.size()} 人）</span>
-        <a href="${pageContext.request.contextPath}/manager?action=dashboard" class="btn btn-outline btn-sm">返回首页</a>
+        <a href="${pageContext.request.contextPath}/mgr?action=dashboard" class="btn btn-outline btn-sm">返回首页</a>
     </div>
 
     <div class="card">
@@ -66,7 +66,7 @@
                         ${m.leaveDate == null ? '在职' : '已离职'}
                     </span>
                     <div class="member-actions">
-                        <a href="${pageContext.request.contextPath}/manager?action=empEdit&id=${m.id}" class="btn btn-info btn-xs">&#9998; 编辑</a>
+                        <a href="${pageContext.request.contextPath}/mgr?action=empEdit&id=${m.id}" class="btn btn-info btn-xs">&#9998; 编辑</a>
                         <a href="javascript:void(0)" onclick="confirmDelete(${m.id}, '${m.name}', '${m.empNo}')" class="btn btn-danger btn-xs">&#128465; 删除</a>
                     </div>
                 </div>
@@ -84,7 +84,7 @@
 <script>
 function confirmDelete(id, name, empNo) {
     if (confirm('确定要删除员工 "' + name + '（' + empNo + '）" 吗？\n\n删除后将设置离职日期，该员工将无法登录系统。')) {
-        window.location.href = '${pageContext.request.contextPath}/manager?action=empDelete&id=' + id;
+        window.location.href = '${pageContext.request.contextPath}/mgr?action=empDelete&id=' + id;
     }
 }
 </script>

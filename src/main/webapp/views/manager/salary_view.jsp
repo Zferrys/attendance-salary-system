@@ -22,6 +22,12 @@
     .history-item:hover { background: #eff6ff; }
     .history-item .month { font-weight: 600; color: #1f2937; }
     .history-item .amount { font-weight: 700; color: #0d9e6c; }
+    @media print {
+        .navbar, .breadcrumb, .filter-bar, .rule-box, .salary-footer button { display: none !important; }
+        .main-container { padding: 0 !important; }
+        .salary-card { box-shadow: none !important; border: 2px solid #1a73e8 !important; page-break-inside: avoid; }
+        body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
 </style>
 </head>
 <body>
@@ -34,7 +40,7 @@
 <div class="main-container">
     <!-- 面包屑导航 -->
     <div class="breadcrumb">
-        <a href="${pageContext.request.contextPath}/manager?action=dashboard">&#127968; 主管首页</a>
+        <a href="${pageContext.request.contextPath}/mgr?action=dashboard">&#127968; 主管首页</a>
         <span class="separator">&#8250;</span>
         <span class="current">薪资详情</span>
     </div>
@@ -46,7 +52,7 @@
             <input type="month" name="yearMonth" value="${yearMonth}">
             <button type="submit" class="btn btn-primary btn-sm">&#128269; 查询</button>
         </form>
-        <a href="${pageContext.request.contextPath}/manager?action=dashboard" class="btn btn-outline btn-sm">返回首页</a>
+        <a href="${pageContext.request.contextPath}/mgr?action=dashboard" class="btn btn-outline btn-sm">返回首页</a>
     </div>
 
     <c:if test="${salary != null}">
@@ -95,7 +101,7 @@
             <div class="empty-icon">&#128203;</div>
             <p>${yearMonth} 的薪资记录尚未生成</p>
             <p style="font-size:13px;color:#9ca3af;margin-top:4px;">请联系管理员生成薪资记录</p>
-            <a href="${pageContext.request.contextPath}/manager?action=dashboard" class="btn btn-outline btn-sm" style="margin-top:12px;">&#8592; 返回首页</a>
+            <a href="${pageContext.request.contextPath}/mgr?action=dashboard" class="btn btn-outline btn-sm" style="margin-top:12px;">&#8592; 返回首页</a>
         </div></div>
     </c:if>
 </div>

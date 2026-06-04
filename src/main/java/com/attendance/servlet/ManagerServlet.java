@@ -25,7 +25,7 @@ import java.util.*;
  *   - teamAttend:   查看团队考勤统计
  *   - leaveReview:  审批下属的请假申请
  */
-@WebServlet("/manager")
+@WebServlet("/mgr")
 public class ManagerServlet extends HttpServlet {
 
     private SalaryService salaryService = new SalaryServiceImpl();
@@ -322,7 +322,7 @@ public class ManagerServlet extends HttpServlet {
 
         if (newStatus == null || newStatus.isEmpty()) {
             req.setAttribute("errorMsg", "请选择要修改的状态！");
-            resp.sendRedirect(req.getContextPath() + "/manager?action=memberAttend&empId=" + empIdStr + "&yearMonth=" + yearMonth);
+            resp.sendRedirect(req.getContextPath() + "/mgr?action=memberAttend&empId=" + empIdStr + "&yearMonth=" + yearMonth);
             return;
         }
 
@@ -344,14 +344,14 @@ public class ManagerServlet extends HttpServlet {
 
             if (targetRecord == null) {
                 req.setAttribute("errorMsg", "考勤记录不存在！");
-                resp.sendRedirect(req.getContextPath() + "/manager?action=memberAttend&empId=" + empIdStr + "&yearMonth=" + yearMonth);
+                resp.sendRedirect(req.getContextPath() + "/mgr?action=memberAttend&empId=" + empIdStr + "&yearMonth=" + yearMonth);
                 return;
             }
 
             Employee recordEmp = empMapper.findById(targetRecord.getEmpId());
             if (recordEmp == null || !recordEmp.getDeptId().equals(manager.getDeptId())) {
                 req.setAttribute("errorMsg", "无权修改该员工的考勤记录！");
-                resp.sendRedirect(req.getContextPath() + "/manager?action=memberAttend&empId=" + empIdStr + "&yearMonth=" + yearMonth);
+                resp.sendRedirect(req.getContextPath() + "/mgr?action=memberAttend&empId=" + empIdStr + "&yearMonth=" + yearMonth);
                 return;
             }
 
@@ -371,7 +371,7 @@ public class ManagerServlet extends HttpServlet {
         }
 
         // 重定向回考勤明细页
-        resp.sendRedirect(req.getContextPath() + "/manager?action=memberAttend&empId=" + empIdStr + "&yearMonth=" + yearMonth);
+        resp.sendRedirect(req.getContextPath() + "/mgr?action=memberAttend&empId=" + empIdStr + "&yearMonth=" + yearMonth);
     }
 
     private Employee getCurrentUser(HttpServletRequest req) {

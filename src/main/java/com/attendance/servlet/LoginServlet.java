@@ -80,7 +80,7 @@ public class LoginServlet extends HttpServlet {
                 resp.sendRedirect(req.getContextPath() + "/admin?action=dashboard");
             } else if (employee.getEmpNo().startsWith("M")) {
                 // 主管 → 主管面板首页
-                resp.sendRedirect(req.getContextPath() + "/manager?action=dashboard");
+                resp.sendRedirect(req.getContextPath() + "/mgr?action=dashboard");
             } else {
                 // 普通员工 → 员工首页
                 resp.sendRedirect(req.getContextPath() + "/employee?action=dashboard");
