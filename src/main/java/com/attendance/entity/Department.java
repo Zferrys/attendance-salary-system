@@ -23,14 +23,11 @@ public class Department implements Serializable {
     /** 部门名称 */
     private String deptName;
 
+    /** 部门主管员工ID */
+    private Integer managerId;
+
     // ==================== 无参构造方法 ====================
     public Department() {}
-
-    // ==================== 全参构造方法 ====================
-    public Department(Integer id, String deptName) {
-        this.id = id;
-        this.deptName = deptName;
-    }
 
     // ==================== Getter & Setter 方法 ====================
 
@@ -48,6 +45,14 @@ public class Department implements Serializable {
 
     public void setDeptName(String deptName) {
         this.deptName = deptName;
+    }
+
+    public Integer getManagerId() {
+        return managerId;
+    }
+
+    public void setManagerId(Integer managerId) {
+        this.managerId = managerId;
     }
 
     // ==================== toString方法（便于调试输出） ====================

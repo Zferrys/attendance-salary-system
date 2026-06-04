@@ -44,6 +44,14 @@ public class ExcelImportUtil {
 
             Employee emp = new Employee();
             // 工号暂不设置，由调用方根据角色前缀自动分配
+            // 设置角色
+            if ("A".equals(role)) {
+                emp.setRole("ADMIN");
+            } else if ("M".equals(role)) {
+                emp.setRole("MANAGER");
+            } else {
+                emp.setRole("EMPLOYEE");
+            }
             emp.setName(getCellString(row.getCell(1)));
             emp.setPassword(MD5Util.md5(getCellString(row.getCell(2))));
 

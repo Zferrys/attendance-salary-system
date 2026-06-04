@@ -339,7 +339,7 @@
         <span class="nav-icon">📋</span>
         记录
     </a>
-    <a href="${pageContext.request.contextPath}/employee?action=dashboard" class="nav-item">
+    <a href="${pageContext.request.contextPath}/miniapp?action=my" class="nav-item">
         <span class="nav-icon">👤</span>
         我的
     </a>
@@ -402,36 +402,48 @@
 
         let html = '';
         records.forEach(r => {
-            const date = new Date(r.workDate);
-            const day = date.getDate();
-            const week = weekdays[date.getDay()];
-            const status = r.status || '正常';
-            const statusClass = status === '正常' ? 'normal' :
-                               status === '迟到' ? 'late' :
-                               status === '早退' ? 'early' : 'absent';
+            var date = new Date(r.workDate + 'T00:00:00');
+            var day = date.getDate();
+            var week = weekdays[date.getDay()];
+            var status = r.status || '正常';
+            var statusClass = status === '正常' ? 'normal' :
+                              status === '迟到' ? 'late' :
+                              status === '早退' ? 'early' : 'absent';
 
-            html += `
-                <div class="record-item">
-                    <div class="date-badge ${statusClass}">
-                        <span class="date-day">${day}</span>
-                        <span class="date-week">周${week}</span>
-                    </div>
-                    <div class="record-info">
-                        <div class="info-row">
-                            <span class="info-label">上班</span>
-                            <span class="info-value time">${r.checkInTime || '--:--:--'}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">下班</span>
-                            <span class="info-value time">${r.checkOutTime || '--:--:--'}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">工时</span>
-                            <span class="info-value">${r.workHours != null ? r.workHours + 'h' : '--'}</span>
-                            <span class="status-tag ${statusClass}">${status}</span>
-                        </div>
-                    </div>
-                </div>`;
+            // 处理打卡时间：只接受字符串格式的时间，其他值显示为 '--:--:--'
+            var inTime = r.checkInTime;
+            var outTime = r.checkOutTime;
+            if (typeof inTime !== 'string' || inTime === 'false' || inTime === 'null') inTime = '--:--:--';
+            if (typeof outTime !== 'string' || outTime === 'false' || outTime === 'null') outTime = '--:--:--';
+
+            // 处理工时
+            var hours = r.workHours;
+            var hoursStr = '--';
+            if (hours != null && hours !== '' && hours !== false && hours !== 'false') {
+                hoursStr = hours + 'h';
+            }
+
+            html += '<div class="record-item">' +
+                '<div class="date-badge ' + statusClass + '">' +
+                    '<span class="date-day">' + day + '</span>' +
+                    '<span class="date-week">周' + week + '</span>' +
+                '</div>' +
+                '<div class="record-info">' +
+                    '<div class="info-row">' +
+                        '<span class="info-label">上班</span>' +
+                        '<span class="info-value time">' + inTime + '</span>' +
+                    '</div>' +
+                    '<div class="info-row">' +
+                        '<span class="info-label">下班</span>' +
+                        '<span class="info-value time">' + outTime + '</span>' +
+                    '</div>' +
+                    '<div class="info-row">' +
+                        '<span class="info-label">工时</span>' +
+                        '<span class="info-value">' + hoursStr + '</span>' +
+                        '<span class="status-tag ' + statusClass + '">' + status + '</span>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
         });
         list.innerHTML = html;
     }

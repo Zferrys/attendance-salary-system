@@ -44,6 +44,9 @@ public class Employee implements Serializable {
     /** 职位/岗位名称 */
     private String position;
 
+    /** 角色：ADMIN管理员/MANAGER主管/EMPLOYEE员工 */
+    private String role;
+
     /** 邮箱地址 */
     private String email;
 
@@ -94,6 +97,9 @@ public class Employee implements Serializable {
 
     public String getPosition() { return position; }
     public void setPosition(String position) { this.position = position; }
+
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }

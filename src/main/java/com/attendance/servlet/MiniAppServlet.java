@@ -83,6 +83,21 @@ public class MiniAppServlet extends HttpServlet {
                 case "logout":
                     doLogout(req, resp);
                     break;
+                case "my":
+                    showMyPage(req, resp);
+                    break;
+                case "leaveApply":
+                    showLeaveApplyPage(req, resp);
+                    break;
+                case "submitLeave":
+                    doSubmitLeave(req, resp);
+                    break;
+                case "salary":
+                    showSalaryPage(req, resp);
+                    break;
+                case "salaryData":
+                    getSalaryData(req, resp);
+                    break;
                 default:
                     showLoginPage(req, resp);
                     break;
@@ -386,7 +401,163 @@ public class MiniAppServlet extends HttpServlet {
     private void doLogout(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
         req.getSession().invalidate();
-        resp.sendRedirect(req.getContextPath() + "/miniapp");
+        // 带上 logout 参数，让登录页清除 localStorage 中的缓存账号
+        resp.sendRedirect(req.getContextPath() + "/miniapp?logout");
+    }
+
+    /** 显示"我的"页面 */
+    private void showMyPage(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        Employee emp = getMiniAppUser(req);
+        if (emp == null) {
+            resp.sendRedirect(req.getContextPath() + "/miniapp");
+            return;
+        }
+        req.setAttribute("user", emp);
+        req.getRequestDispatcher("/views/miniapp/my.jsp").forward(req, resp);
+    }
+
+    /** 显示请假申请页面 */
+    private void showLeaveApplyPage(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        Employee emp = getMiniAppUser(req);
+        if (emp == null) {
+            resp.sendRedirect(req.getContextPath() + "/miniapp");
+            return;
+        }
+        req.setAttribute("user", emp);
+        req.getRequestDispatcher("/views/miniapp/leave_apply.jsp").forward(req, resp);
+    }
+
+    /** 显示薪资查询页面 */
+    private void showSalaryPage(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        Employee emp = getMiniAppUser(req);
+        if (emp == null) {
+            resp.sendRedirect(req.getContextPath() + "/miniapp");
+            return;
+        }
+        req.setAttribute("user", emp);
+
+        // 获取月份参数，默认当前月
+        String yearMonth = req.getParameter("yearMonth");
+        if (yearMonth == null || yearMonth.isEmpty()) {
+            yearMonth = new SimpleDateFormat("yyyy-MM").format(new java.util.Date());
+        }
+        req.setAttribute("yearMonth", yearMonth);
+
+        // 服务端查询薪资数据
+        Salary salary = salaryService.findByEmpAndMonth(emp.getId(), yearMonth);
+        req.setAttribute("salary", salary);
+
+        req.getRequestDispatcher("/views/miniapp/salary.jsp").forward(req, resp);
+    }
+
+    /** 提交请假申请（返回JSON） */
+    private void doSubmitLeave(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException {
+        resp.setContentType("application/json;charset=UTF-8");
+        Map<String, Object> result = new HashMap<>();
+
+        Employee emp = getMiniAppUser(req);
+        if (emp == null) {
+            result.put("success", false);
+            result.put("needLogin", true);
+            result.put("message", "请先登录！");
+            resp.getWriter().write(gson.toJson(result));
+            return;
+        }
+
+        String leaveType = req.getParameter("leaveType");
+        String startDate = req.getParameter("startDate");
+        String endDate = req.getParameter("endDate");
+        String reason = req.getParameter("reason");
+
+        if (leaveType == null || startDate == null || endDate == null || reason == null) {
+            result.put("success", false);
+            result.put("message", "请填写完整的请假信息！");
+            resp.getWriter().write(gson.toJson(result));
+            return;
+        }
+
+        SqlSession session = MyBatisUtils.getSession();
+        try {
+            LeaveRequestMapper mapper = session.getMapper(LeaveRequestMapper.class);
+            LeaveRequest leave = new LeaveRequest();
+            leave.setEmpId(emp.getId());
+            leave.setLeaveType(leaveType.trim());
+            Date start = Date.valueOf(startDate.trim());
+            Date end = Date.valueOf(endDate.trim());
+            leave.setStartDate(start);
+            leave.setEndDate(end);
+            long days = (end.getTime() - start.getTime()) / (24 * 60 * 60 * 1000) + 1;
+            leave.setDays((int) days);
+            leave.setReason(reason.trim());
+            leave.setStatus("待审批");
+
+            mapper.insert(leave);
+            session.commit();
+
+            result.put("success", true);
+            result.put("message", "请假申请已提交，请等待审批！");
+        } catch (Exception e) {
+            session.rollback();
+            result.put("success", false);
+            result.put("message", "提交失败：" + e.getMessage());
+        } finally {
+            MyBatisUtils.closeSession(session);
+        }
+        resp.getWriter().write(gson.toJson(result));
+    }
+
+    /** 获取薪资数据（返回JSON） */
+    private void getSalaryData(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException {
+        resp.setContentType("application/json;charset=UTF-8");
+        Map<String, Object> result = new HashMap<>();
+
+        Employee emp = getMiniAppUser(req);
+        if (emp == null) {
+            result.put("success", false);
+            result.put("needLogin", true);
+            resp.getWriter().write(gson.toJson(result));
+            return;
+        }
+
+        String yearMonth = req.getParameter("yearMonth");
+        if (yearMonth == null || yearMonth.isEmpty()) {
+            yearMonth = new SimpleDateFormat("yyyy-MM").format(new java.util.Date());
+        }
+
+        try {
+            Salary salary = salaryService.findByEmpAndMonth(emp.getId(), yearMonth);
+            if (salary != null) {
+                Map<String, Object> salaryMap = new HashMap<>();
+                salaryMap.put("totalSalary", salary.getActualSalary());
+                salaryMap.put("baseSalary", salary.getBaseSalary());
+                salaryMap.put("bonus", salary.getAttendanceBonus());
+                salaryMap.put("overtimePay", salary.getOvertimePay());
+                BigDecimal deduction = BigDecimal.ZERO;
+                if (salary.getDeductionLate() != null) {
+                    deduction = deduction.add(salary.getDeductionLate());
+                }
+                if (salary.getDeductionLeave() != null) {
+                    deduction = deduction.add(salary.getDeductionLeave());
+                }
+                salaryMap.put("deduction", deduction);
+                salaryMap.put("yearMonth", salary.getYearMonth());
+                salaryMap.put("status", salary.getStatus());
+                result.put("success", true);
+                result.put("salary", salaryMap);
+            } else {
+                result.put("success", false);
+                result.put("message", "该月暂无薪资数据");
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "查询失败：" + e.getMessage());
+        }
+        resp.getWriter().write(gson.toJson(result));
     }
 
     /** 获取当前 H5 小程序登录用户 */

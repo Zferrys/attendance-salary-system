@@ -71,6 +71,13 @@
                 <p>查看、搜索、添加员工信息，支持按部门和姓名筛选</p>
             </div>
         </a>
+        <a href="${pageContext.request.contextPath}/admin?action=attendanceList" class="feature-card">
+            <div class="feature-icon" style="background:linear-gradient(135deg,#fce7f3,#fdf2f8); color:#db2777;">&#128197;</div>
+            <div class="feature-info">
+                <h3>考勤管理</h3>
+                <p>查看所有员工考勤记录，支持按部门、日期、状态筛选</p>
+            </div>
+        </a>
         <a href="${pageContext.request.contextPath}/admin?action=salaryList" class="feature-card">
             <div class="feature-icon" style="background:linear-gradient(135deg,#d1fae5,#ecfdf5); color:#0d9e6c;">&#128176;</div>
             <div class="feature-info">

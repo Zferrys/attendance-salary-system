@@ -186,13 +186,6 @@
         .pc-link:active {
             opacity: 0.7;
         }
-
-        .remember-hint {
-            font-size: 12px;
-            color: #9ca3af;
-            text-align: center;
-            margin-top: 8px;
-        }
     </style>
 </head>
 <body>
@@ -227,10 +220,6 @@
         </button>
     </form>
 
-    <div class="remember-hint" id="rememberHint" style="display:none;">
-        ✅ 已记住登录，下次自动进入
-    </div>
-
     <div class="tips">
         <strong>📌 测试账号（密码均为 123456）：</strong>
         <p>
@@ -247,49 +236,13 @@
 <script>
     const ctxPath = '${pageContext.request.contextPath}';
 
-    // 页面加载时尝试自动登录
+    // 页面加载时：如果是退出登录跳过来的，清除本地存储
     document.addEventListener('DOMContentLoaded', function() {
-        const savedEmpNo = localStorage.getItem('miniapp_empNo');
-        const savedPwd = localStorage.getItem('miniapp_password');
-        
-        if (savedEmpNo && savedPwd) {
-            document.getElementById('empNo').value = savedEmpNo;
-            document.getElementById('password').value = savedPwd;
-            document.getElementById('rememberHint').style.display = 'block';
-            // 自动登录
-            autoLogin(savedEmpNo, savedPwd);
+        if (window.location.search.indexOf('logout') !== -1) {
+            localStorage.removeItem('miniapp_empNo');
+            localStorage.removeItem('miniapp_password');
         }
     });
-
-    function autoLogin(empNo, password) {
-        const btn = document.getElementById('loginBtn');
-        btn.classList.add('loading');
-        
-        fetch(ctxPath + '/miniapp?action=login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'empNo=' + encodeURIComponent(empNo) + '&password=' + encodeURIComponent(password)
-        })
-        .then(r => r.json())
-        .then(data => {
-            btn.classList.remove('loading');
-            if (data.success) {
-                // 记住登录信息
-                localStorage.setItem('miniapp_empNo', empNo);
-                localStorage.setItem('miniapp_password', password);
-                window.location.href = ctxPath + '/miniapp?action=clock';
-            } else {
-                // 自动登录失败，清除存储的密码
-                localStorage.removeItem('miniapp_password');
-                document.getElementById('rememberHint').style.display = 'none';
-                showError(data.message || '自动登录失败，请手动输入');
-            }
-        })
-        .catch(err => {
-            btn.classList.remove('loading');
-            showError('网络错误，请检查连接');
-        });
-    }
 
     function handleLogin(e) {
         e.preventDefault();

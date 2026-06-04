@@ -21,9 +21,20 @@
         <result property="checkOutTime" column="check_out_time"/>
         <result property="status" column="status"/>
         <result property="workHours" column="work_hours"/>
+        <result property="empName" column="emp_name"/>
+        <result property="deptName" column="dept_name"/>
     </resultMap>
 
     <!-- ==================== 核心查询SQL ==================== -->
+
+    <!-- 根据ID查询考勤记录 -->
+    <select id="findById" resultMap="recordResultMap">
+        SELECT ar.*, e.name AS emp_name, d.dept_name
+        FROM attend_record ar
+        LEFT JOIN employee e ON ar.emp_id = e.id
+        LEFT JOIN department d ON e.dept_id = d.id
+        WHERE ar.id = #{id}
+    </select>
 
     <!-- 查询指定员工+日期的考勤记录（用于打卡重复判断） -->
     <select id="findByEmpAndDate" resultMap="recordResultMap">
@@ -52,6 +63,10 @@
         LEFT JOIN department d ON e.dept_id = d.id
         WHERE 1=1
 
+        <!-- 条件0：指定记录ID -->
+        <if test="id != null">
+            AND ar.id = #{id}
+        </if>
         <!-- 条件1：指定员工ID -->
         <if test="empId != null">
             AND ar.emp_id = #{empId}
@@ -116,5 +131,10 @@
         </set>
         WHERE id = #{id}
     </update>
+
+    <!-- 删除考勤记录 -->
+    <delete id="deleteById">
+        DELETE FROM attend_record WHERE id = #{id}
+    </delete>
 
 </mapper>

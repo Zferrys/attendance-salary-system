@@ -20,6 +20,7 @@
         <result property="password" column="password"/>
         <result property="deptId" column="dept_id"/>
         <result property="position" column="position"/>
+        <result property="role" column="role"/>
         <result property="email" column="email"/>
         <result property="baseSalary" column="base_salary"/>
         <result property="entryDate" column="entry_date"/>
@@ -115,8 +116,8 @@
 
     <!-- 新增员工 -->
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO employee (emp_no, name, password, dept_id, position, email, base_salary, entry_date)
-        VALUES (#{empNo}, #{name}, #{password}, #{deptId}, #{position}, #{email}, #{baseSalary}, #{entryDate})
+        INSERT INTO employee (emp_no, name, password, dept_id, position, role, email, base_salary, entry_date)
+        VALUES (#{empNo}, #{name}, #{password}, #{deptId}, #{position}, #{role}, #{email}, #{baseSalary}, #{entryDate})
     </insert>
 
     <!-- 更新员工信息（动态更新，只修改非空字段） -->

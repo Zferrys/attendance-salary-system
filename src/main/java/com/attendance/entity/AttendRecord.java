@@ -65,6 +65,9 @@ public class AttendRecord implements Serializable {
     /** 员工工号 */
     private String empNo;
 
+    /** 部门名称（关联查询填充） */
+    private String deptName;
+
     // ==================== 构造方法 ====================
     public AttendRecord() {}
 
@@ -106,6 +109,9 @@ public class AttendRecord implements Serializable {
 
     public String getEmpNo() { return empNo; }
     public void setEmpNo(String empNo) { this.empNo = empNo; }
+
+    public String getDeptName() { return deptName; }
+    public void setDeptName(String deptName) { this.deptName = deptName; }
 
     @Override
     public String toString() {

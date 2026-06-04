@@ -1,6 +1,7 @@
 package com.attendance.servlet;
 
 import com.attendance.entity.*;
+import com.attendance.mapper.AttendRecordMapper;
 import com.attendance.mapper.DepartmentMapper;
 import com.attendance.mapper.EmployeeMapper;
 import com.attendance.service.SalaryService;
@@ -28,13 +29,14 @@ import java.util.Map;
  * 管理员端Servlet（管理员功能控制器）
  *
  * 功能模块:
- *   - dashboard:    管理后台首页（数据概览）
- *   - empList:      员工管理列表
- *   - empAdd:       添加新员工
- *   - salaryGen:    生成月度薪资
- *   - salaryList:   薪资管理列表
- *   - salaryPay:    薪资发放
- *   - salaryReport: 月度报表导出
+ *   - dashboard:     管理后台首页（数据概览）
+ *   - empList:       员工管理列表
+ *   - empAdd:        添加新员工
+ *   - attendanceList:考勤管理列表（管理员可查看所有员工考勤）
+ *   - salaryGen:     生成月度薪资
+ *   - salaryList:    薪资管理列表
+ *   - salaryPay:     薪资发放
+ *   - salaryReport:  月度报表导出
  */
 @WebServlet("/admin")
 public class AdminServlet extends HttpServlet {
@@ -47,19 +49,23 @@ public class AdminServlet extends HttpServlet {
         String action = req.getParameter("action");
         try {
             switch (action == null ? "dashboard" : action) {
-                case "dashboard":     dashboard(req, resp); break;
-                case "empList":       empList(req, resp); break;
-                case "empAdd":        empAdd(req, resp); break;
-                case "getNextEmpNo":  getNextEmpNo(req, resp); break;
-                case "empImport":     empImport(req, resp); break;
-                case "empEdit":       empEdit(req, resp); break;
-                case "empUpdate":     empUpdate(req, resp); break;
-                case "empDelete":     empDelete(req, resp); break;
-                case "salaryGen":     salaryGen(req, resp); break;
-                case "salaryList":    salaryList(req, resp); break;
-                case "salaryPay":     salaryPay(req, resp); break;
-                case "salaryReport":  salaryReport(req, resp); break;
-                default:              dashboard(req, resp); break;
+                case "dashboard":      dashboard(req, resp); break;
+                case "empList":        empList(req, resp); break;
+                case "empAdd":         empAdd(req, resp); break;
+                case "getNextEmpNo":   getNextEmpNo(req, resp); break;
+                case "empImport":      empImport(req, resp); break;
+                case "empEdit":        empEdit(req, resp); break;
+                case "empUpdate":      empUpdate(req, resp); break;
+                case "empDelete":      empDelete(req, resp); break;
+                case "attendanceList": attendanceList(req, resp); break;
+                case "attendanceEdit": attendanceEdit(req, resp); break;
+                case "attendanceUpdate": attendanceUpdate(req, resp); break;
+                case "attendanceDelete": attendanceDelete(req, resp); break;
+                case "salaryGen":      salaryGen(req, resp); break;
+                case "salaryList":     salaryList(req, resp); break;
+                case "salaryPay":      salaryPay(req, resp); break;
+                case "salaryReport":   salaryReport(req, resp); break;
+                default:               dashboard(req, resp); break;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -139,6 +145,14 @@ public class AdminServlet extends HttpServlet {
         }
         emp.setDeptId(deptId);
         emp.setPosition(position.trim());
+        // 根据工号前缀自动设置角色
+        if (empNo.trim().startsWith("A")) {
+            emp.setRole("ADMIN");
+        } else if (empNo.trim().startsWith("M")) {
+            emp.setRole("MANAGER");
+        } else {
+            emp.setRole("EMPLOYEE");
+        }
         emp.setBaseSalary(java.math.BigDecimal.valueOf(baseSalaryDbl));
         emp.setEntryDate(java.sql.Date.valueOf(entryDateStr));
 
@@ -290,6 +304,140 @@ public class AdminServlet extends HttpServlet {
             req.setAttribute("errorMsg", "删除失败：" + e.getMessage());
             empList(req, resp);
         } finally { MyBatisUtils.closeSession(session); }
+    }
+
+    /**
+     * 考勤管理列表（管理员查看所有员工考勤）
+     * 支持按部门、日期范围、考勤状态筛选
+     */
+    private void attendanceList(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        SqlSession session = MyBatisUtils.getSession();
+        try {
+            AttendRecordMapper recordMapper = session.getMapper(AttendRecordMapper.class);
+            DepartmentMapper deptMapper = session.getMapper(DepartmentMapper.class);
+            EmployeeMapper empMapper = session.getMapper(EmployeeMapper.class);
+
+            // 获取筛选参数
+            String deptIdStr = req.getParameter("deptId");
+            String startDate = req.getParameter("startDate");
+            String endDate = req.getParameter("endDate");
+            String status = req.getParameter("status");
+
+            java.util.Map<String, Object> params = new java.util.HashMap<>();
+            if (deptIdStr != null && !deptIdStr.isEmpty()) {
+                params.put("deptId", Integer.parseInt(deptIdStr));
+            }
+            if (startDate != null && !startDate.isEmpty()) {
+                params.put("startDate", java.sql.Date.valueOf(startDate));
+            }
+            if (endDate != null && !endDate.isEmpty()) {
+                params.put("endDate", java.sql.Date.valueOf(endDate));
+            }
+            if (status != null && !status.isEmpty()) {
+                params.put("status", status);
+            }
+
+            java.util.List<AttendRecord> recordList = recordMapper.findByConditions(params);
+            req.setAttribute("recordList", recordList);
+            req.setAttribute("deptList", deptMapper.findAll());
+            req.setAttribute("empList", empMapper.findAllWithDept());
+
+            // 回显筛选条件
+            req.setAttribute("deptId", deptIdStr);
+            req.setAttribute("startDate", startDate);
+            req.setAttribute("endDate", endDate);
+            req.setAttribute("status", status);
+
+            req.getRequestDispatcher("/views/admin/attendance_list.jsp").forward(req, resp);
+        } finally { MyBatisUtils.closeSession(session); }
+    }
+
+    /** 编辑考勤记录：显示编辑表单 */
+    private void attendanceEdit(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        Integer id = Integer.parseInt(req.getParameter("id"));
+
+        SqlSession session = MyBatisUtils.getSession();
+        try {
+            AttendRecordMapper recordMapper = session.getMapper(AttendRecordMapper.class);
+            EmployeeMapper empMapper = session.getMapper(EmployeeMapper.class);
+
+            // 查询该记录
+            java.util.Map<String, Object> params = new java.util.HashMap<>();
+            params.put("id", id);
+            java.util.List<AttendRecord> list = recordMapper.findByConditions(params);
+            AttendRecord record = list.isEmpty() ? null : list.get(0);
+
+            if (record == null) {
+                req.setAttribute("errorMsg", "考勤记录不存在！");
+                attendanceList(req, resp);
+                return;
+            }
+
+            req.setAttribute("record", record);
+            req.setAttribute("empList", empMapper.findAllWithDept());
+            req.getRequestDispatcher("/views/admin/attendance_edit.jsp").forward(req, resp);
+        } finally { MyBatisUtils.closeSession(session); }
+    }
+
+    /** 更新考勤记录 */
+    private void attendanceUpdate(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        Integer id = Integer.parseInt(req.getParameter("id"));
+        String checkInTimeStr = req.getParameter("checkInTime");
+        String checkOutTimeStr = req.getParameter("checkOutTime");
+        String status = req.getParameter("status");
+        String workHoursStr = req.getParameter("workHours");
+
+        SqlSession session = MyBatisUtils.getSession();
+        try {
+            AttendRecordMapper recordMapper = session.getMapper(AttendRecordMapper.class);
+
+            AttendRecord record = new AttendRecord();
+            record.setId(id);
+
+            if (checkInTimeStr != null && !checkInTimeStr.isEmpty()) {
+                record.setCheckInTime(java.sql.Timestamp.valueOf(checkInTimeStr.replace("T", " ") + ":00"));
+            }
+            if (checkOutTimeStr != null && !checkOutTimeStr.isEmpty()) {
+                record.setCheckOutTime(java.sql.Timestamp.valueOf(checkOutTimeStr.replace("T", " ") + ":00"));
+            }
+            record.setStatus(status);
+            if (workHoursStr != null && !workHoursStr.isEmpty()) {
+                record.setWorkHours(java.math.BigDecimal.valueOf(Double.parseDouble(workHoursStr)));
+            }
+
+            recordMapper.update(record);
+            session.commit();
+            req.setAttribute("msg", "考勤记录更新成功！");
+        } catch (Exception e) {
+            session.rollback();
+            req.setAttribute("errorMsg", "更新失败：" + e.getMessage());
+        } finally {
+            MyBatisUtils.closeSession(session);
+        }
+        attendanceList(req, resp);
+    }
+
+    /** 删除考勤记录 */
+    private void attendanceDelete(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        Integer id = Integer.parseInt(req.getParameter("id"));
+
+        SqlSession session = MyBatisUtils.getSession();
+        try {
+            AttendRecordMapper recordMapper = session.getMapper(AttendRecordMapper.class);
+            recordMapper.deleteById(id);
+            session.commit();
+            req.setAttribute("msg", "考勤记录删除成功！");
+        } catch (Exception e) {
+            session.rollback();
+            req.setAttribute("errorMsg", "删除失败：" + e.getMessage());
+        } finally {
+            MyBatisUtils.closeSession(session);
+        }
+        attendanceList(req, resp);
     }
 
     /**

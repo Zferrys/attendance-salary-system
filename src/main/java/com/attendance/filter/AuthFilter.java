@@ -56,19 +56,19 @@ public class AuthFilter implements Filter {
             return;
         }
 
-        // 根据请求路径进行权限校验
-        String empNo = user.getEmpNo();
+        // 根据 role 字段进行权限校验
+        String role = user.getRole();
 
         if (url.startsWith("/admin")) {
-            // 管理员页面：只有A开头的工号可访问
-            if (!empNo.startsWith("A")) {
+            // 管理员页面：只有 ADMIN 角色可访问
+            if (!"ADMIN".equals(role)) {
                 req.setAttribute("errorMsg", "您没有管理后台访问权限！");
                 req.getRequestDispatcher("/views/common/login.jsp").forward(req, resp);
                 return;
             }
         } else if (url.startsWith("/mgr")) {
-            // 主管页面：M开头或A开头可访问
-            if (!empNo.startsWith("M") && !empNo.startsWith("A")) {
+            // 主管页面：MANAGER 或 ADMIN 可访问（管理员可管理所有主管）
+            if (!"MANAGER".equals(role) && !"ADMIN".equals(role)) {
                 req.setAttribute("errorMsg", "您没有主管面板访问权限！");
                 req.getRequestDispatcher("/views/common/login.jsp").forward(req, resp);
                 return;

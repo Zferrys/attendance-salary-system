@@ -85,4 +85,20 @@ public interface AttendRecordMapper {
      * @return 统计结果Map: {正常: x天, 迟到: y天, 早退: z天, 缺勤: n天}
      */
     Map<String, Object> countByStatus(@Param("empId") Integer empId, @Param("yearMonth") String yearMonth);
+
+    /**
+     * 根据ID删除考勤记录
+     *
+     * @param id 记录ID
+     * @return 影响行数
+     */
+    int deleteById(Integer id);
+
+    /**
+     * 根据ID查询考勤记录
+     *
+     * @param id 记录ID
+     * @return 考勤记录
+     */
+    AttendRecord findById(Integer id);
 }

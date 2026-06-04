@@ -21,6 +21,7 @@ DROP TABLE IF EXISTS `department`;
 CREATE TABLE `department` (
     `id` INT PRIMARY KEY AUTO_INCREMENT COMMENT '部门ID，主键自增',
     `dept_name` VARCHAR(50) NOT NULL COMMENT '部门名称',
+    `manager_id` INT DEFAULT NULL COMMENT '部门主管员工ID，关联employee表',
     UNIQUE KEY `uk_dept_name` (`dept_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='部门信息表';
 
@@ -38,6 +39,8 @@ CREATE TABLE `employee` (
     `password` VARCHAR(100) NOT NULL COMMENT '登录密码（建议MD5加密）',
     `dept_id` INT NOT NULL COMMENT '所属部门ID，外键关联department表',
     `position` VARCHAR(50) NOT NULL COMMENT '职位/岗位名称',
+    `role` VARCHAR(20) NOT NULL DEFAULT 'EMPLOYEE' COMMENT '角色：ADMIN管理员/MANAGER主管/EMPLOYEE员工',
+    `email` VARCHAR(100) DEFAULT NULL COMMENT '邮箱地址',
     `base_salary` DECIMAL(10,2) NOT NULL DEFAULT 0.00 COMMENT '基本工资（元）',
     `entry_date` DATE NOT NULL COMMENT '入职日期',
     `leave_date` DATE DEFAULT NULL COMMENT '离职日期（NULL表示在职）',
@@ -115,27 +118,30 @@ CREATE TABLE `salary` (
 -- ============================================================
 -- 插入测试数据 - 部门
 -- ============================================================
-INSERT INTO `department` (`dept_name`) VALUES 
-('技术部'),
-('人事部'),
-('财务部'),
-('市场部');
+INSERT INTO `department` (`dept_name`, `manager_id`) VALUES 
+('技术部', NULL),   -- 主管ID将在employee插入后更新
+('人事部', NULL),
+('财务部', NULL),
+('市场部', NULL);
+
+-- 更新部门主管关联
+UPDATE `department` SET `manager_id` = (SELECT `id` FROM `employee` WHERE `emp_no` = 'M001') WHERE `dept_name` = '技术部';
 
 -- ============================================================
 -- 插入测试数据 - 员工
 -- 密码统一为: 123456 的明文（生产环境应使用MD5加密存储）
 -- 角色分配: admin=管理员, manager=主管, emp=普通员工
 -- ============================================================
-INSERT INTO `employee` (`emp_no`, `name`, `password`, `dept_id`, `position`, `base_salary`, `entry_date`) VALUES
-('E001', '张三', '123456', 1, 'Java开发工程师', 12000.00, '2025-01-15'),
-('E002', '李四', '123456', 1, '前端开发工程师', 11000.00, '2025-03-01'),
-('E003', '王五', '123456', 2, 'HR专员', 8000.00, '2024-11-01'),
-('E004', '赵六', '123456', 3, '会计', 9000.00, '2024-08-10'),
-('E005', '孙七', '123456', 4, '销售经理', 15000.00, '2024-05-01'),
--- 主管账号（拥有审批权限）
-('M001', '陈主管', '123456', 1, '技术部主管', 20000.00, '2023-06-01'),
--- 管理员账号（拥有最高权限）
-('A001', '管理员', 'admin888', 1, '系统管理员', 25000.00, '2023-01-01');
+INSERT INTO `employee` (`emp_no`, `name`, `password`, `dept_id`, `position`, `role`, `base_salary`, `entry_date`) VALUES
+('E001', '张三', '123456', 1, 'Java开发工程师', 'EMPLOYEE', 12000.00, '2025-01-15'),
+('E002', '李四', '123456', 1, '前端开发工程师', 'EMPLOYEE', 11000.00, '2025-03-01'),
+('E003', '王五', '123456', 2, 'HR专员', 'EMPLOYEE', 8000.00, '2024-11-01'),
+('E004', '赵六', '123456', 3, '会计', 'EMPLOYEE', 9000.00, '2024-08-10'),
+('E005', '孙七', '123456', 4, '销售经理', 'EMPLOYEE', 15000.00, '2024-05-01'),
+-- 主管账号（拥有审批权限，管理本部门员工）
+('M001', '陈主管', '123456', 1, '技术部主管', 'MANAGER', 20000.00, '2023-06-01'),
+-- 管理员账号（拥有最高权限，可管理所有主管和员工）
+('A001', '管理员', 'admin888', 1, '系统管理员', 'ADMIN', 25000.00, '2023-01-01');
 
 -- ============================================================
 -- 插入测试数据 - 考勤记录（模拟2026年6月前几天的数据）

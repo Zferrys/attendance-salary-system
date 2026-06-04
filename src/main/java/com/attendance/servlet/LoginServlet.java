@@ -74,11 +74,12 @@ public class LoginServlet extends HttpServlet {
             HttpSession session = req.getSession();
             session.setAttribute("currentUser", employee);
 
-            // 根据工号前缀判断角色并跳转到对应页面
-            if (employee.getEmpNo().startsWith("A")) {
+            // 根据 role 字段判断角色并跳转到对应页面
+            String role = employee.getRole();
+            if ("ADMIN".equals(role)) {
                 // 管理员 → 管理后台首页
                 resp.sendRedirect(req.getContextPath() + "/admin?action=dashboard");
-            } else if (employee.getEmpNo().startsWith("M")) {
+            } else if ("MANAGER".equals(role)) {
                 // 主管 → 主管面板首页
                 resp.sendRedirect(req.getContextPath() + "/mgr?action=dashboard");
             } else {

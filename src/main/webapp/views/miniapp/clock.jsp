@@ -461,11 +461,11 @@
             <span class="link-icon">📋</span>
             考勤记录
         </a>
-        <a href="${pageContext.request.contextPath}/employee?action=applyLeave" class="action-link">
+        <a href="${pageContext.request.contextPath}/miniapp?action=leaveApply" class="action-link">
             <span class="link-icon">📝</span>
             请假申请
         </a>
-        <a href="${pageContext.request.contextPath}/employee?action=salaryView" class="action-link">
+        <a href="${pageContext.request.contextPath}/miniapp?action=salary" class="action-link">
             <span class="link-icon">💰</span>
             薪资查询
         </a>
@@ -482,7 +482,7 @@
         <span class="nav-icon">📋</span>
         记录
     </a>
-    <a href="${pageContext.request.contextPath}/employee?action=dashboard" class="nav-item">
+    <a href="${pageContext.request.contextPath}/miniapp?action=my" class="nav-item">
         <span class="nav-icon">👤</span>
         我的
     </a>

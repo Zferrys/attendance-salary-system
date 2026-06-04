@@ -61,6 +61,30 @@
             background: #eff6ff;
             color: #1a73e8;
         }
+        .miniapp-entry {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 18px;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(102,126,234,0.3);
+        }
+        .miniapp-entry:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(102,126,234,0.5);
+            color: #fff;
+        }
+        .miniapp-icon { font-size: 18px; }
+        .miniapp-arrow { font-size: 16px; transition: transform 0.3s; }
+        .miniapp-entry:hover .miniapp-arrow { transform: translateX(4px); }
     </style>
 </head>
 <body class="login-page">
@@ -114,6 +138,13 @@
             <strong>&#128203; 测试账号（密码均为 123456）：</strong>
             A001 — 管理员 | M001 — 陈主管 | E001 ~ E005 — 员工
         </div>
+
+        <!-- 打卡小程序H5入口 -->
+        <a href="${pageContext.request.contextPath}/miniapp" class="miniapp-entry">
+            <span class="miniapp-icon">&#128241;</span>
+            <span class="miniapp-text">打卡小程序</span>
+            <span class="miniapp-arrow">&#8594;</span>
+        </a>
     </div>
 
     <script>
