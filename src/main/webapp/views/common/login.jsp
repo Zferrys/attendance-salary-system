@@ -91,9 +91,9 @@
             <input type="hidden" name="action" value="login">
 
             <div class="form-group">
-                <label for="name">姓名</label>
-                <input type="text" id="name" name="name" class="form-control"
-                       placeholder="请输入姓名"
+                <label for="empNo">工号</label>
+                <input type="text" id="empNo" name="empNo" class="form-control"
+                       placeholder="请输入工号（如 E001、M001、A001）"
                        value="" required autofocus>
             </div>
 
@@ -112,7 +112,7 @@
         <!-- 测试账号提示 -->
         <div class="test-accounts">
             <strong>&#128203; 测试账号（密码均为 123456）：</strong>
-            系统管理员 — 管理员 | 陈主管 — 主管 | 张三 ~ 王五 — 员工
+            A001 — 管理员 | M001 — 陈主管 | E001 ~ E005 — 员工
         </div>
     </div>
 

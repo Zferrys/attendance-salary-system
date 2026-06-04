@@ -19,7 +19,7 @@ import java.util.Map;
  *
  * 请求映射: /login
  * 参数:
- *   - action=login: 执行登录操作（参数: name=姓名, password=密码）
+ *   - action=login: 执行登录操作（参数: empNo=工号, password=密码）
  *   - action=logout: 执行登出操作
  *
  * 角色判断逻辑:
@@ -55,19 +55,19 @@ public class LoginServlet extends HttpServlet {
      */
     private void doLogin(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        String name = req.getParameter("name");
+        String empNo = req.getParameter("empNo");
         String password = req.getParameter("password");
 
         // 基础参数校验
-        if (name == null || name.trim().isEmpty() ||
+        if (empNo == null || empNo.trim().isEmpty() ||
             password == null || password.trim().isEmpty()) {
-            req.setAttribute("errorMsg", "请输入姓名和密码！");
+            req.setAttribute("errorMsg", "请输入工号和密码！");
             req.getRequestDispatcher("/views/common/login.jsp").forward(req, resp);
             return;
         }
 
-        // 调用Service层进行登录验证（按姓名查询）
-        Employee employee = employeeService.login(name.trim(), password.trim());
+        // 调用Service层进行登录验证（按工号查询，工号唯一不会冲突）
+        Employee employee = employeeService.loginByEmpNo(empNo.trim(), password.trim());
 
         if (employee != null) {
             // 登录成功：将用户信息存入Session
@@ -87,8 +87,8 @@ public class LoginServlet extends HttpServlet {
             }
         } else {
             // 登录失败：返回错误信息到登录页
-            req.setAttribute("errorMsg", "姓名或密码错误！");
-            req.setAttribute("name", name); // 回显姓名
+            req.setAttribute("errorMsg", "工号或密码错误！");
+            req.setAttribute("empNo", empNo); // 回显工号
             req.getRequestDispatcher("/views/common/login.jsp").forward(req, resp);
         }
     }

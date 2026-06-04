@@ -14,12 +14,12 @@ import org.apache.ibatis.session.SqlSession;
 public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
-    public Employee login(String name, String password) {
+    public Employee loginByEmpNo(String empNo, String password) {
         SqlSession session = MyBatisUtils.getSession();
         try {
             EmployeeMapper mapper = session.getMapper(EmployeeMapper.class);
-            // 先根据姓名查询员工
-            Employee emp = mapper.loginByName(name);
+            // 按工号查询（工号唯一，不会同名冲突）
+            Employee emp = mapper.login(empNo);
             // 密码验证：先MD5比对（新数据），再明文比对（兼容旧数据）
             if (emp != null && MD5Util.verify(password, emp.getPassword())) {
                 return emp;
