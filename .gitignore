@@ -9,13 +9,27 @@ target/
 .project
 .classpath
 
+# Build output
+out/
+*.class
+*.war
+*.jar
+
 # OS
 .DS_Store
 Thumbs.db
 
 # Logs
 *.log
+logs/
 
-# Temp
+# Temp & Backup
 *.tmp
 *.bak
+*~
+
+# Sensitive config files (email password, db password)
+src/main/resources/email.properties
+
+# Upload temp
+uploads/

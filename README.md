@@ -1,6 +1,6 @@
 # 员工考勤与薪资管理系统
 
-> 🎓 基于 **MyBatis + Druid** 的 Java Web 考勤薪资管理系统 | Servlet/JSP + Maven 架构
+> 基于 **MyBatis + Druid + Servlet/JSP** 的 Java Web 考勤薪资管理系统 | Maven 多模块架构
 
 ![Java](https://img.shields.io/badge/Java-1.8-blue)
 ![Tomcat](https://img.shields.io/badge/Tomcat-8.x%2F9.x-orange)
@@ -20,8 +20,9 @@
 - [核心业务逻辑](#核心业务逻辑)
 - [快速开始](#快速开始)
 - [测试账号](#测试账号)
-- [技术亮点](#技术亮点)
-- [功能截图](#功能截图)
+- [API 路由](#api-路由)
+- [代码审查](#代码审查)
+- [待优化项](#待优化项)
 
 ---
 
@@ -58,6 +59,7 @@
 ## ✨ 系统功能
 
 ### 👨‍💼 管理员端 (`/admin`)
+
 | 功能模块 | 说明 |
 |---------|------|
 | 📊 数据概览 | 员工总数、部门总数仪表盘 |
@@ -69,6 +71,7 @@
 | 📈 薪资报表 | 月度薪资统计：总额、已发放/未发放、各项明细 |
 
 ### 👔 主管端 (`/manager`)
+
 | 功能模块 | 说明 |
 |---------|------|
 | 📋 待审批 | 查看待审批请假申请 |
@@ -78,6 +81,7 @@
 | 💰 薪资查看 | 查看本部门员工薪资 |
 
 ### 👷 员工端 (`/employee`)
+
 | 功能模块 | 说明 |
 |---------|------|
 | ⏰ 打卡签到 | 上班/下班打卡，自动判断迟到/早退 |
@@ -87,6 +91,7 @@
 | 💰 薪资查看 | 查看月度薪资详情 |
 
 ### 📱 小程序端 (`/miniapp`)
+
 | 功能模块 | 说明 |
 |---------|------|
 | 🔐 小程序登录 | 工号+密码登录 |
@@ -122,7 +127,8 @@
 ```
 attendance-salary-system/
 ├── pom.xml                              # Maven 依赖配置
-├── README.md                            # 本文档
+├── README.md                            # 项目文档
+├── .gitignore                           # Git 忽略规则
 ├── salary_test_data.sql                 # 薪资测试数据
 ├── update_email.sql                     # 邮箱字段更新脚本
 ├── test.xlsx                            # Excel导入测试文件
@@ -158,8 +164,9 @@ attendance-salary-system/
         │   │   ├── EmployeeServlet.java     # 员工端
         │   │   └── MiniAppServlet.java      # 小程序端
         │   │
-        │   ├── filter/
-        │   │   └── AuthFilter.java      # 权限认证过滤器
+        │   ├── filter/                  # 过滤器
+        │   │   ├── AuthFilter.java      # 权限认证过滤器
+        │   │   └── EncodingFilter.java  # UTF-8 编码过滤器
         │   │
         │   └── utils/                   # 工具类（5个）
         │       ├── MyBatisUtils.java    # MyBatis会话管理
@@ -173,6 +180,7 @@ attendance-salary-system/
         │   ├── mybatis-config.xml       # MyBatis核心配置
         │   ├── druid.properties         # Druid连接池配置
         │   ├── log4j2.xml               # Log4j2日志配置
+        │   ├── email.properties.example # 邮件配置模板
         │   └── mapper/                  # MyBatis XML映射（5个）
         │       ├── DepartmentMapper.xml
         │       ├── EmployeeMapper.xml
@@ -184,12 +192,12 @@ attendance-salary-system/
             ├── WEB-INF/
             │   └── web.xml              # Web部署描述符
             │
-            ├── views/                   # JSP视图（35个）
+            ├── views/                   # JSP视图（约25个）
             │   ├── common/              # 公共页面（登录/错误页）
-            │   ├── admin/               # 管理员端（8个页面）
-            │   ├── manager/             # 主管端（7个页面）
-            │   ├── employee/            # 员工端（5个页面）
-            │   └── miniapp/             # 小程序端（6个页面）
+            │   ├── admin/               # 管理员端
+            │   ├── manager/             # 主管端
+            │   ├── employee/            # 员工端
+            │   └── miniapp/             # 小程序端
             │
             └── assets/                  # 静态资源
                 ├── css/style.css        # 全局样式
@@ -255,10 +263,13 @@ attendance-salary-system/
 
 ### 环境要求
 
-- **JDK 1.8+**
-- **Apache Tomcat 8.x / 9.x**
-- **MySQL 5.7+ / 8.0**
-- **IntelliJ IDEA**（推荐）
+| 工具 | 版本 |
+|------|------|
+| JDK | 1.8+ |
+| Apache Tomcat | 8.x / 9.x |
+| MySQL | 5.7+ / 8.0 |
+| Maven | 3.6+ |
+| IntelliJ IDEA | 推荐 |
 
 ### 部署步骤
 
@@ -289,7 +300,12 @@ jdbc.password=你的数据库密码
 
 **4. 配置邮件发送（可选）**
 
-编辑 `src/main/java/com/attendance/utils/EmailUtil.java`，配置发件邮箱信息。薪资发放时将自动发送邮件通知员工。
+```bash
+# 复制邮件配置模板
+cp src/main/resources/email.properties.example src/main/resources/email.properties
+```
+
+编辑 `src/main/resources/email.properties`，填入你的 QQ 邮箱和 SMTP 授权码（在 QQ 邮箱设置 → 账户 → POP3/SMTP 服务中生成）。未配置时系统会自动使用模拟模式，不影响其他功能。
 
 **5. IDEA 配置 Tomcat 运行**
 
@@ -315,54 +331,78 @@ jdbc.password=你的数据库密码
 | 员工 | E004 | 赵六 | 123456 | 同上 |
 | 员工 | E005 | 孙七 | 123456 | 同上 |
 
-> 💡 密码使用 MD5 加密存储，请勿直接修改数据库中的密码字段
+> ⚠️ 当前密码为明文存储，生产环境建议使用 BCrypt 或 SHA-256 + 随机盐值加密
 
 ---
 
-## 💡 技术亮点
+## 🌐 API 路由
 
-### MyBatis 核心技术
+### 管理员端 `/admin`
 
-| 技术点 | 实现方式 | 应用场景 |
-|--------|---------|---------|
-| **动态SQL** | `<if>`, `<where>`, `<set>` XML标签 | 考勤/员工多条件组合查询 |
-| **动态SQL注解** | `@SelectProvider` | 考勤灵活筛选 |
-| **关联查询** | `@One`, `@Results` | 薪资→员工→部门三级嵌套 |
-| **resultMap** | XML `<resultMap>` + `<association>` | 复杂关联映射 |
-| **批量操作** | MyBatis + Druid事务 | Excel批量导入员工 |
+| Action | 方法 | 说明 |
+|--------|------|------|
+| `?action=dashboard` | GET | 管理仪表盘 |
+| `?action=empList` | GET | 员工列表（支持搜索/分页） |
+| `?action=empAdd` | POST | 添加员工 |
+| `?action=empEdit` | POST | 编辑员工 |
+| `?action=empDelete` | GET | 删除员工 |
+| `?action=empImport` | POST | Excel 批量导入 |
+| `?action=attendanceList` | GET | 考勤记录列表 |
+| `?action=attendanceEdit` | POST | 编辑考勤记录 |
+| `?action=salaryGenerate` | POST | 生成月度薪资 |
+| `?action=salaryPay` | POST | 发放薪资 |
+| `?action=salaryList` | GET | 薪资列表 |
+| `?action=salaryReport` | GET | 薪资报表 |
 
-### 系统设计亮点
+### 员工端 `/employee`
 
-- ✅ **三端分离**：管理员/主管/员工 + 小程序端，四种视图完全独立
-- ✅ **角色权限**：基于工号前缀自动分配角色，AuthFilter 统一拦截
-- ✅ **MD5加密**：密码安全存储
-- ✅ **邮件通知**：薪资发放自动发送邮件
-- ✅ **Excel导入**：支持批量导入员工数据
-- ✅ **考勤智能判定**：自动识别迟到/早退/正常/缺勤
-- ✅ **薪资自动计算**：含全勤奖、迟到扣款、请假扣款完整公式
-- ✅ **响应式UI**：CSS卡片式布局，状态徽章，移动端友好
+| Action | 方法 | 说明 |
+|--------|------|------|
+| `?action=dashboard` | GET | 员工首页 |
+| `?action=clock` | GET/POST | 打卡页面/执行打卡 |
+| `?action=attendView` | GET | 考勤日历 |
+| `?action=applyLeave` | POST | 提交请假申请 |
+| `?action=leaveList` | GET | 请假记录列表 |
+| `?action=salaryView` | GET | 查看薪资 |
+
+### 主管端 `/manager`
+
+| Action | 方法 | 说明 |
+|--------|------|------|
+| `?action=dashboard` | GET | 主管首页 |
+| `?action=pendingLeaves` | GET | 待审批请假 |
+| `?action=approveLeave` | POST | 审批请假 |
+| `?action=teamAttendance` | GET | 团队考勤 |
+| `?action=salaryView` | GET | 查看部门薪资 |
 
 ---
 
-## 📊 功能截图
+## 🔍 代码审查
 
-### 管理员端
-- 数据概览仪表盘 → `/admin?action=dashboard`
-- 员工管理列表 → `/admin?action=empList`
-- 考勤管理（编辑/删除） → `/admin?action=attendanceList`
-- 薪资管理与发放 → `/admin?action=salaryList`
-- 月度薪资报表 → `/admin?action=salaryReport`
+> 以下为最近一次代码审查发现的主要问题及处理状态
 
-### 员工端
-- 打卡签到 → `/employee?action=clock`
-- 考勤日历 → `/employee?action=attendView`
-- 请假申请 → `/employee?action=applyLeave`
-- 薪资查看 → `/employee?action=salaryView`
+| # | 严重度 | 问题描述 | 状态 |
+|---|--------|---------|------|
+| 1 | 严重 | 邮箱密码硬编码在源码中 | ✅ 已修复（改为读取配置文件） |
+| 2 | 严重 | init.sql 中 UPDATE 在 INSERT 之前 | ✅ 已修复 |
+| 3 | 中危 | AttendRecordMapper.xml 中 empName 映射重复 | ⏳ 待修复 |
+| 4 | 中危 | MD5 密码加密不够安全 | ⏳ 待升级 |
+| 5 | 中危 | 部分 Servlet 中 SqlSession 管理不统一 | ⏳ 待优化 |
+| 6 | 低 | 三个 Servlet 中存在重复的分页工具代码 | ⏳ 待提取 |
+| 7 | 低 | MyBatis 数据源未真正使用 Druid 连接池 | ⏳ 待修复 |
+| 8 | 低 | Service 层使用不一致 | ⏳ 待统一 |
 
-### 小程序端
-- 小程序登录 → `/views/miniapp/login.jsp`
-- 打卡页面 → `/views/miniapp/clock.jsp`
-- 考勤记录 → `/views/miniapp/records.jsp`
+---
+
+## 📝 待优化项
+
+- [ ] 密码加密升级为 BCrypt 或 SHA-256 + 随机盐值
+- [ ] 统一 Service 层调用，Servlet 不直接操作 Mapper
+- [ ] 提取公共分页代码到 BaseServlet 或工具类
+- [ ] 引入 ThreadLocal 管理 SqlSession 以支持事务
+- [ ] 添加单元测试覆盖核心计算逻辑
+- [ ] JSP 视图迁移到现代前端框架（Vue/React）
+- [ ] 添加 Swagger/OpenAPI 接口文档
 
 ---
 

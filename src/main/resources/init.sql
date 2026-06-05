@@ -124,9 +124,6 @@ INSERT INTO `department` (`dept_name`, `manager_id`) VALUES
 ('财务部', NULL),
 ('市场部', NULL);
 
--- 更新部门主管关联
-UPDATE `department` SET `manager_id` = (SELECT `id` FROM `employee` WHERE `emp_no` = 'M001') WHERE `dept_name` = '技术部';
-
 -- ============================================================
 -- 插入测试数据 - 员工
 -- 密码统一为: 123456 的明文（生产环境应使用MD5加密存储）
@@ -142,6 +139,9 @@ INSERT INTO `employee` (`emp_no`, `name`, `password`, `dept_id`, `position`, `ro
 ('M001', '陈主管', '123456', 1, '技术部主管', 'MANAGER', 20000.00, '2023-06-01'),
 -- 管理员账号（拥有最高权限，可管理所有主管和员工）
 ('A001', '管理员', 'admin888', 1, '系统管理员', 'ADMIN', 25000.00, '2023-01-01');
+
+-- 更新部门主管关联（必须在 employee 插入之后执行）
+UPDATE `department` SET `manager_id` = (SELECT `id` FROM `employee` WHERE `emp_no` = 'M001') WHERE `dept_name` = '技术部';
 
 -- ============================================================
 -- 插入测试数据 - 考勤记录（模拟2026年6月前几天的数据）

@@ -89,6 +89,36 @@
         </if>
 
         ORDER BY ar.work_date DESC, ar.emp_id
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <!-- 考勤记录数统计（与findByConditions使用相同的条件） -->
+    <select id="countByConditions" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM attend_record ar
+        INNER JOIN employee e ON ar.emp_id = e.id
+        LEFT JOIN department d ON e.dept_id = d.id
+        WHERE 1=1
+        <if test="id != null">
+            AND ar.id = #{id}
+        </if>
+        <if test="empId != null">
+            AND ar.emp_id = #{empId}
+        </if>
+        <if test="startDate != null">
+            AND ar.work_date &gt;= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND ar.work_date &lt;= #{endDate}
+        </if>
+        <if test="status != null and status != ''">
+            AND ar.status = #{status}
+        </if>
+        <if test="deptId != null">
+            AND e.dept_id = #{deptId}
+        </if>
     </select>
 
     <!-- 查询员工指定月份的所有考勤记录（用于月度日历展示） -->

@@ -350,7 +350,7 @@ public class MiniAppServlet extends HttpServlet {
         resp.getWriter().write(gson.toJson(result));
     }
 
-    /** 获取月度考勤记录（返回JSON） */
+    /** 获取月度考勤记录（返回JSON，支持分页） */
     private void getMonthRecords(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
         resp.setContentType("application/json;charset=UTF-8");
@@ -368,16 +368,28 @@ public class MiniAppServlet extends HttpServlet {
         if (yearMonth == null || yearMonth.isEmpty()) {
             yearMonth = new SimpleDateFormat("yyyy-MM").format(new java.util.Date());
         }
+        
+        // 分页参数
+        int page = 1;
+        int pageSize = 15;
+        try { page = Integer.parseInt(req.getParameter("page")); if (page < 1) page = 1; } catch (Exception e) {}
 
         SqlSession session = MyBatisUtils.getSession();
         try {
             AttendRecordMapper mapper = session.getMapper(AttendRecordMapper.class);
-            List<AttendRecord> records = mapper.findByEmpAndMonth(emp.getId(), yearMonth);
+            List<AttendRecord> allRecords = mapper.findByEmpAndMonth(emp.getId(), yearMonth);
             Map<String, Object> stats = mapper.countByStatus(emp.getId(), yearMonth);
+            
+            // 前端分页：计算总数、总页数、当前页数据
+            int totalCount = allRecords.size();
+            int totalPages = (int) Math.ceil((double) totalCount / pageSize);
+            int offset = (page - 1) * pageSize;
+            int endIndex = Math.min(offset + pageSize, totalCount);
+            List<AttendRecord> pageRecords = allRecords.subList(offset, endIndex);
 
             List<Map<String, Object>> recordList = new ArrayList<>();
             SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-            for (AttendRecord r : records) {
+            for (AttendRecord r : pageRecords) {
                 Map<String, Object> item = new HashMap<>();
                 item.put("workDate", r.getWorkDate().toString());
                 item.put("checkInTime", r.getCheckInTime() != null ? sdf.format(r.getCheckInTime()) : null);
@@ -391,6 +403,10 @@ public class MiniAppServlet extends HttpServlet {
             result.put("records", recordList);
             result.put("stats", stats);
             result.put("yearMonth", yearMonth);
+            result.put("currentPage", page);
+            result.put("totalPages", totalPages);
+            result.put("totalCount", totalCount);
+            result.put("hasMore", page < totalPages);
         } finally {
             MyBatisUtils.closeSession(session);
         }

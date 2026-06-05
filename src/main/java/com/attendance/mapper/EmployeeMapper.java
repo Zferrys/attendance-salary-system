@@ -52,17 +52,25 @@ public interface EmployeeMapper {
     List<Employee> findAllWithDept();
 
     /**
-     * 【动态SQL】多条件组合查询员工
+     * 【动态SQL】多条件组合查询员工（支持分页）
      * 支持按姓名、部门ID、职位等条件灵活组合查询
-     * 使用@SelectProvider实现动态SQL生成
      *
      * @param params 查询条件Map，可包含：
      *               - name (String): 员工姓名（模糊匹配）
      *               - deptId (Integer): 部门ID
      *               - position (String): 职位
+     *               - offset (Integer): 分页偏移量
+     *               - limit (Integer): 每页记录数
      * @return 符合条件的员工列表
      */
     List<Employee> findByConditions(Map<String, Object> params);
+
+    /**
+     * 统计符合条件的员工总数
+     * @param params 条件Map（与findByConditions使用相同的条件）
+     * @return 员工总数
+     */
+    int countByConditions(Map<String, Object> params);
 
     /**
      * 新增员工

@@ -152,8 +152,9 @@
     </div>
 
     <!-- 筛选栏 -->
-    <form class="filter-bar" method="get" action="${pageContext.request.contextPath}/admin">
+    <form id="filterForm" class="filter-bar" method="get" action="${pageContext.request.contextPath}/admin">
         <input type="hidden" name="action" value="attendanceList">
+        <input type="hidden" name="page" id="pageInput" value="${currentPage}">
         <label>部门：</label>
         <select name="deptId">
             <option value="">全部部门</option>
@@ -173,7 +174,7 @@
             <option value="早退" ${status == '早退' ? 'selected' : ''}>早退</option>
             <option value="缺勤" ${status == '缺勤' ? 'selected' : ''}>缺勤</option>
         </select>
-        <button type="submit" class="btn btn-primary">&#128269; 查询</button>
+        <button type="submit" class="btn btn-primary" onclick="document.getElementById('pageInput').value='1'">&#128269; 查询</button>
         <a href="${pageContext.request.contextPath}/admin?action=attendanceList" class="btn btn-secondary">重置</a>
     </form>
 
@@ -221,8 +222,15 @@
             </c:if>
         </tbody>
     </table>
+    <jsp:include page="/views/common/pagination.jsp"/>
 </div>
 
+<script>
+function goPage(p) {
+    document.getElementById('pageInput').value = p;
+    document.getElementById('filterForm').submit();
+}
+</script>
 <script>
     // 统计各状态数量
     var normal = 0, late = 0, early = 0, absent = 0;

@@ -117,7 +117,7 @@
         WHERE s.emp_id = #{empId} AND s.`year_month` = #{yearMonth}
     </select>
 
-    <!-- 查询指定月份的所有薪资记录（管理员月度发放用） -->
+    <!-- 查询指定月份的所有薪资记录（管理员月度发放用，支持分页） -->
     <select id="findByMonth" resultMap="salarySimpleMap">
         SELECT s.*, e.name AS emp_name, e.emp_no, d.dept_name,
                e.base_salary AS emp_base_salary
@@ -126,6 +126,18 @@
         LEFT JOIN department d ON e.dept_id = d.id
         WHERE s.`year_month` = #{yearMonth}
         ORDER BY d.dept_name, e.emp_no
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <!-- 统计指定月份的薪资记录数 -->
+    <select id="countByMonth" parameterType="string" resultType="int">
+        SELECT COUNT(*)
+        FROM salary s
+        INNER JOIN employee e ON s.emp_id = e.id
+        LEFT JOIN department d ON e.dept_id = d.id
+        WHERE s.`year_month` = #{yearMonth}
     </select>
 
     <!-- ==================== 写入操作SQL ==================== -->

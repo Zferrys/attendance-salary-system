@@ -1,0 +1,15 @@
+# ============================================================
+# 邮件发送配置文件（请勿提交包含真实密码的文件到版本控制）
+# 位置: src/main/resources/email.properties
+# 说明: EmailUtil 从此文件读取 SMTP 配置，未配置时使用模拟模式
+# ============================================================
+
+# QQ邮箱 SMTP 服务器
+mail.smtp.host=smtp.qq.com
+mail.smtp.port=587
+
+# 发件邮箱地址（请输入你的 QQ 邮箱）
+mail.from.email=your_email@qq.com
+
+# SMTP 授权码（在 QQ 邮箱设置 → 账户 → POP3/SMTP 服务中生成，不是 QQ 密码！）
+mail.from.password=your_smtp_auth_code

@@ -111,7 +111,35 @@
             AND e.position LIKE CONCAT('%', #{position}, '%')
         </if>
         
+        <!-- 条件4: 角色精确匹配 -->
+        <if test="role != null and role != ''">
+            AND e.role = #{role}
+        </if>
+        
         ORDER BY e.id
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <!-- 员工数量统计（与findByConditions使用相同的条件） -->
+    <select id="countByConditions" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM employee e
+        LEFT JOIN department d ON e.dept_id = d.id
+        WHERE e.leave_date IS NULL
+        <if test="name != null and name != ''">
+            AND e.name LIKE CONCAT('%', #{name}, '%')
+        </if>
+        <if test="deptId != null and deptId != 0">
+            AND e.dept_id = #{deptId}
+        </if>
+        <if test="position != null and position != ''">
+            AND e.position LIKE CONCAT('%', #{position}, '%')
+        </if>
+        <if test="role != null and role != ''">
+            AND e.role = #{role}
+        </if>
     </select>
 
     <!-- 新增员工 -->

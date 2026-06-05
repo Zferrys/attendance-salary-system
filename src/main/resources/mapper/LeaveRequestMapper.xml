@@ -75,6 +75,37 @@
         </if>
 
         ORDER BY lr.id DESC
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <!-- 请假记录数统计（与findByConditions使用相同的条件） -->
+    <select id="countByConditions" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM leave_request lr
+        INNER JOIN employee e1 ON lr.emp_id = e1.id
+        LEFT JOIN department d ON e1.dept_id = d.id
+        LEFT JOIN employee e2 ON lr.approver_id = e2.id
+        WHERE 1=1
+        <if test="empId != null">
+            AND lr.emp_id = #{empId}
+        </if>
+        <if test="status != null and status != ''">
+            AND lr.status = #{status}
+        </if>
+        <if test="approverId != null">
+            AND lr.approver_id = #{approverId}
+        </if>
+        <if test="leaveType != null and leaveType != ''">
+            AND lr.leave_type = #{leaveType}
+        </if>
+        <if test="startDate != null">
+            AND lr.start_date &gt;= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND lr.end_date &lt;= #{endDate}
+        </if>
     </select>
 
     <!-- 新增请假申请 -->

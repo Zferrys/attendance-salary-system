@@ -307,7 +307,35 @@ public class SalaryServiceImpl implements SalaryService {
         SqlSession session = MyBatisUtils.getSession();
         try {
             SalaryMapper mapper = session.getMapper(SalaryMapper.class);
-            return mapper.findByMonth(yearMonth);
+            Map<String, Object> params = new HashMap<>();
+            params.put("yearMonth", yearMonth);
+            return mapper.findByMonth(params);
+        } finally {
+            MyBatisUtils.closeSession(session);
+        }
+    }
+
+    @Override
+    public List<Salary> findByMonthPaged(String yearMonth, int offset, int limit) {
+        SqlSession session = MyBatisUtils.getSession();
+        try {
+            SalaryMapper mapper = session.getMapper(SalaryMapper.class);
+            Map<String, Object> params = new HashMap<>();
+            params.put("yearMonth", yearMonth);
+            params.put("offset", offset);
+            params.put("limit", limit);
+            return mapper.findByMonth(params);
+        } finally {
+            MyBatisUtils.closeSession(session);
+        }
+    }
+
+    @Override
+    public int countByMonth(String yearMonth) {
+        SqlSession session = MyBatisUtils.getSession();
+        try {
+            SalaryMapper mapper = session.getMapper(SalaryMapper.class);
+            return mapper.countByMonth(yearMonth);
         } finally {
             MyBatisUtils.closeSession(session);
         }
@@ -340,7 +368,9 @@ public class SalaryServiceImpl implements SalaryService {
         SqlSession session = MyBatisUtils.getSession();
         try {
             SalaryMapper mapper = session.getMapper(SalaryMapper.class);
-            List<Salary> salaries = mapper.findByMonth(yearMonth);
+            Map<String, Object> params = new HashMap<>();
+            params.put("yearMonth", yearMonth);
+            List<Salary> salaries = mapper.findByMonth(params);
             
             List<Map<String, Object>> report = new ArrayList<>();
             for (Salary s : salaries) {

@@ -40,6 +40,7 @@
     <c:if test="${not empty msg}"><div class="alert alert-success">${msg}</div></c:if>
 
     <div style="text-align:right;margin-bottom:16px;">
+        <span style="float:left;color:#6b7280;font-size:14px;line-height:40px;">共 <strong>${totalCount}</strong> 条记录</span>
         <a href="${pageContext.request.contextPath}/employee?action=applyLeave" class="btn btn-primary">&#10133; 新建请假</a>
     </div>
 
@@ -69,9 +70,17 @@
         </c:if>
     </div>
 
+    <jsp:include page="/views/common/pagination.jsp"/>
+
     <div style="text-align:center;margin-top:16px;">
         <a href="${pageContext.request.contextPath}/employee?action=dashboard" class="btn btn-outline">&#8592; 返回首页</a>
     </div>
 </div>
+
+<script>
+function goPage(p) {
+    window.location.href = '${pageContext.request.contextPath}/employee?action=leaveList&page=' + p;
+}
+</script>
 </body>
 </html>

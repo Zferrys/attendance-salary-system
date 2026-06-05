@@ -40,6 +40,7 @@
     <div class="filter-bar">
         <form method="get" style="display:flex;align-items:center;gap:12px;">
             <input type="hidden" name="action" value="teamAttend">
+            <input type="hidden" name="page" value="1">
             <label>&#128197; 月份：</label><input type="month" name="yearMonth" value="${yearMonth}">
             <button class="btn btn-primary btn-sm">&#128269; 查询</button>
         </form>
@@ -47,7 +48,7 @@
     </div>
 
     <div style="margin-bottom:16px;">
-        <h3 style="font-size:18px;font-weight:700;color:#1f2937;">${yearMonth} 团队成员考勤 <span style="font-size:14px;color:#6b7280;font-weight:400;">(${teamMembers.size()} 人)</span></h3>
+        <h3 style="font-size:18px;font-weight:700;color:#1f2937;">${yearMonth} 团队成员考勤 <span style="font-size:14px;color:#6b7280;font-weight:400;">(${totalCount != null ? totalCount : teamMembers.size()} 人)</span></h3>
     </div>
 
     <c:forEach items="${teamMembers}" var="m">
@@ -87,6 +88,14 @@
             <div class="empty-icon">&#128101;</div><p>暂无团队成员数据</p>
         </div></div>
     </c:if>
+
+    <jsp:include page="/views/common/pagination.jsp"/>
 </div>
+
+<script>
+function goPage(p) {
+    window.location.href = '${pageContext.request.contextPath}/mgr?action=teamAttend&yearMonth=${yearMonth}&page=' + p;
+}
+</script>
 </body>
 </html>

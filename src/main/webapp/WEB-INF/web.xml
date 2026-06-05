@@ -24,7 +24,7 @@
     <!-- ==================== 编码过滤器（解决中文乱码） ==================== -->
     <filter>
         <filter-name>encodingFilter</filter-name>
-        <filter-class>org.apache.catalina.filters.SetCharacterEncodingFilter</filter-class>
+        <filter-class>com.attendance.filter.EncodingFilter</filter-class>
         <init-param>
             <param-name>encoding</param-name>
             <param-value>UTF-8</param-value>

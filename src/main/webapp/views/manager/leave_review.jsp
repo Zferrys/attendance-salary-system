@@ -39,7 +39,7 @@
     <c:if test="${not empty msg}"><div class="alert alert-success">${msg}</div></c:if>
 
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <h3 style="font-size:18px;font-weight:700;color:#1f2937;">待审批的请假申请 <span style="font-size:14px;color:#6b7280;font-weight:400;">(${leaveList.size()} 条)</span></h3>
+        <h3 style="font-size:18px;font-weight:700;color:#1f2937;">待审批的请假申请 <span style="font-size:14px;color:#6b7280;font-weight:400;">(${totalCount} 条)</span></h3>
         <a href="${pageContext.request.contextPath}/mgr?action=dashboard" class="btn btn-outline btn-sm">&#8592; 返回首页</a>
     </div>
 
@@ -86,6 +86,14 @@
             <p>暂无待审批的请假申请</p>
         </div></div>
     </c:if>
+
+    <jsp:include page="/views/common/pagination.jsp"/>
 </div>
+
+<script>
+function goPage(p) {
+    window.location.href = '${pageContext.request.contextPath}/mgr?action=leaveReview&page=' + p;
+}
+</script>
 </body>
 </html>

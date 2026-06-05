@@ -27,18 +27,27 @@ public interface LeaveRequestMapper {
     LeaveRequest findById(@Param("id") Integer id);
 
     /**
-     * 【动态SQL】多条件查询请假申请列表
+     * 【动态SQL】多条件查询请假申请列表（支持分页）
      *
      * 支持条件:
      *   - empId (Integer): 指定员工的请假记录
      *   - status (String): 筛选状态（待审批/已批准等）
      *   - approverId (Integer): 指定主管审批的记录
      *   - leaveType (String): 请假类型
+     *   - offset (Integer): 分页偏移量
+     *   - limit (Integer): 每页记录数
      *
      * @param params 条件Map
      * @return 请假列表
      */
     List<LeaveRequest> findByConditions(Map<String, Object> params);
+
+    /**
+     * 统计符合条件的请假记录总数
+     * @param params 条件Map（与findByConditions使用相同的条件）
+     * @return 记录总数
+     */
+    int countByConditions(Map<String, Object> params);
 
     /**
      * 新增请假申请

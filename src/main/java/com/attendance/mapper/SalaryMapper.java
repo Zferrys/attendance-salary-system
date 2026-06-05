@@ -75,12 +75,22 @@ public interface SalaryMapper {
     List<Salary> findAllWithDetails();
 
     /**
-     * 查询指定月份的所有薪资记录（用于月度薪资发放操作）
+     * 查询指定月份的所有薪资记录（用于月度薪资发放操作，支持分页）
      *
-     * @param yearMonth 年月
-     * @return 该月的所有薪资列表
+     * @param params 查询参数Map，包含：
+     *               - yearMonth (String): 年月
+     *               - offset (Integer): 分页偏移量
+     *               - limit (Integer): 每页记录数
+     * @return 该月的薪资列表
      */
-    List<Salary> findByMonth(@Param("yearMonth") String yearMonth);
+    List<Salary> findByMonth(Map<String, Object> params);
+
+    /**
+     * 统计指定月份的薪资记录总数
+     * @param yearMonth 年月
+     * @return 记录总数
+     */
+    int countByMonth(@Param("yearMonth") String yearMonth);
 
     /**
      * 新增薪资记录

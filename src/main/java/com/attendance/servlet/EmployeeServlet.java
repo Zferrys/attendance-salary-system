@@ -269,7 +269,7 @@ public class EmployeeServlet extends HttpServlet {
         }
     }
 
-    /** 查看自己的请假列表 */
+    /** 查看自己的请假列表（支持分页） */
     private void leaveList(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         Employee emp = getCurrentUser(req);
@@ -278,8 +278,16 @@ public class EmployeeServlet extends HttpServlet {
             LeaveRequestMapper mapper = session.getMapper(LeaveRequestMapper.class);
             Map<String, Object> params = new HashMap<>();
             params.put("empId", emp.getId());
+            
+            int[] pageInfo = parsePageParams(req);
+            params.put("offset", pageInfo[1]);
+            params.put("limit", pageInfo[2]);
+            
             List<LeaveRequest> list = mapper.findByConditions(params);
+            int totalCount = mapper.countByConditions(params);
+            
             req.setAttribute("leaveList", list);
+            setPageAttributes(req, pageInfo[0], pageInfo[2], totalCount);
             req.getRequestDispatcher("/views/employee/leave_list.jsp").forward(req, resp);
         } finally { MyBatisUtils.closeSession(session); }
     }
@@ -313,6 +321,29 @@ public class EmployeeServlet extends HttpServlet {
     }
 
     // ==================== 工具方法 ====================
+
+    /**
+     * 解析分页参数
+     * @return int[3]: [page, offset, pageSize]
+     */
+    private int[] parsePageParams(HttpServletRequest req) {
+        int page = 1;
+        int pageSize = 10;
+        try { page = Integer.parseInt(req.getParameter("page")); if (page < 1) page = 1; } catch (Exception e) {}
+        try { pageSize = Integer.parseInt(req.getParameter("pageSize")); if (pageSize < 1) pageSize = 10; } catch (Exception e) {}
+        int offset = (page - 1) * pageSize;
+        return new int[]{page, offset, pageSize};
+    }
+
+    /**
+     * 设置分页属性到 request
+     */
+    private void setPageAttributes(HttpServletRequest req, int page, int pageSize, int totalCount) {
+        req.setAttribute("currentPage", page);
+        req.setAttribute("pageSize", pageSize);
+        req.setAttribute("totalCount", totalCount);
+        req.setAttribute("totalPages", (int) Math.ceil((double) totalCount / pageSize));
+    }
 
     private Employee getCurrentUser(HttpServletRequest req) {
         return (Employee) req.getSession().getAttribute("currentUser");

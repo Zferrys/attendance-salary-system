@@ -78,7 +78,7 @@ public class ManagerServlet extends HttpServlet {
         } finally { MyBatisUtils.closeSession(session); }
     }
 
-    /** 查看团队考勤统计：展示部门员工的考勤情况 */
+    /** 查看团队考勤统计：展示部门员工的考勤情况（支持分页） */
     private void teamAttend(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         Employee manager = getCurrentUser(req);
@@ -92,10 +92,19 @@ public class ManagerServlet extends HttpServlet {
             EmployeeMapper empMapper = session.getMapper(EmployeeMapper.class);
             AttendRecordMapper attendMapper = session.getMapper(AttendRecordMapper.class);
 
-            // 获取同部门的所有员工
-            List<Employee> teamMembers = empMapper.findByDeptId(manager.getDeptId());
+            // 分页获取同部门员工
+            Map<String, Object> params = new HashMap<>();
+            params.put("deptId", manager.getDeptId());
+            params.put("role", "EMPLOYEE");
             
-            // 获取每个成员当月考勤统计
+            int[] pageInfo = parsePageParams(req);
+            params.put("offset", pageInfo[1]);
+            params.put("limit", pageInfo[2]);
+            
+            List<Employee> teamMembers = empMapper.findByConditions(params);
+            int totalCount = empMapper.countByConditions(params);
+            
+            // 获取当前页每个成员当月考勤统计
             for (Employee member : teamMembers) {
                 Map stats = attendMapper.countByStatus(member.getId(), yearMonth);
                 member.setAttendList(attendMapper.findByEmpAndMonth(member.getId(), yearMonth));
@@ -103,12 +112,13 @@ public class ManagerServlet extends HttpServlet {
 
             req.setAttribute("teamMembers", teamMembers);
             req.setAttribute("yearMonth", yearMonth);
+            setPageAttributes(req, pageInfo[0], pageInfo[2], totalCount);
             req.getRequestDispatcher("/views/manager/team_attend.jsp").forward(req, resp);
         } finally { MyBatisUtils.closeSession(session); }
     }
 
     /**
-     * 查看待审批的请假申请列表
+     * 查看待审批的请假申请列表（支持分页）
      * 主管可以查看所有"待审批"状态的请假申请并进行审批操作
      */
     private void leaveReview(HttpServletRequest req, HttpServletResponse resp)
@@ -118,8 +128,16 @@ public class ManagerServlet extends HttpServlet {
             LeaveRequestMapper mapper = session.getMapper(LeaveRequestMapper.class);
             Map<String, Object> params = new HashMap<>();
             params.put("status", "待审批");
+            
+            int[] pageInfo = parsePageParams(req);
+            params.put("offset", pageInfo[1]);
+            params.put("limit", pageInfo[2]);
+            
             List<LeaveRequest> list = mapper.findByConditions(params);
+            int totalCount = mapper.countByConditions(params);
+            
             req.setAttribute("leaveList", list);
+            setPageAttributes(req, pageInfo[0], pageInfo[2], totalCount);
             req.getRequestDispatcher("/views/manager/leave_review.jsp").forward(req, resp);
         } finally { MyBatisUtils.closeSession(session); }
     }
@@ -149,16 +167,27 @@ public class ManagerServlet extends HttpServlet {
         } finally { MyBatisUtils.closeSession(session); }
     }
 
-    /** 查看团队员工列表 */
+    /** 查看团队员工列表（支持分页） */
     private void empList(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         Employee manager = getCurrentUser(req);
         SqlSession session = MyBatisUtils.getSession();
         try {
             EmployeeMapper empMapper = session.getMapper(EmployeeMapper.class);
-            // 获取同部门的所有在职员工
-            List<Employee> teamMembers = empMapper.findByDeptId(manager.getDeptId());
+            
+            Map<String, Object> params = new HashMap<>();
+            params.put("deptId", manager.getDeptId());
+            params.put("role", "EMPLOYEE");
+            
+            int[] pageInfo = parsePageParams(req);
+            params.put("offset", pageInfo[1]);
+            params.put("limit", pageInfo[2]);
+            
+            List<Employee> teamMembers = empMapper.findByConditions(params);
+            int totalCount = empMapper.countByConditions(params);
+            
             req.setAttribute("teamMembers", teamMembers);
+            setPageAttributes(req, pageInfo[0], pageInfo[2], totalCount);
             req.getRequestDispatcher("/views/manager/emp_list.jsp").forward(req, resp);
         } finally { MyBatisUtils.closeSession(session); }
     }
@@ -372,6 +401,31 @@ public class ManagerServlet extends HttpServlet {
 
         // 重定向回考勤明细页
         resp.sendRedirect(req.getContextPath() + "/mgr?action=memberAttend&empId=" + empIdStr + "&yearMonth=" + yearMonth);
+    }
+
+    // ==================== 工具方法 ====================
+
+    /**
+     * 解析分页参数
+     * @return int[3]: [page, offset, pageSize]
+     */
+    private int[] parsePageParams(HttpServletRequest req) {
+        int page = 1;
+        int pageSize = 10;
+        try { page = Integer.parseInt(req.getParameter("page")); if (page < 1) page = 1; } catch (Exception e) {}
+        try { pageSize = Integer.parseInt(req.getParameter("pageSize")); if (pageSize < 1) pageSize = 10; } catch (Exception e) {}
+        int offset = (page - 1) * pageSize;
+        return new int[]{page, offset, pageSize};
+    }
+
+    /**
+     * 设置分页属性到 request
+     */
+    private void setPageAttributes(HttpServletRequest req, int page, int pageSize, int totalCount) {
+        req.setAttribute("currentPage", page);
+        req.setAttribute("pageSize", pageSize);
+        req.setAttribute("totalCount", totalCount);
+        req.setAttribute("totalPages", (int) Math.ceil((double) totalCount / pageSize));
     }
 
     private Employee getCurrentUser(HttpServletRequest req) {

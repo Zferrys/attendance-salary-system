@@ -210,6 +210,44 @@
         .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
         .empty-state p { font-size: 15px; }
 
+        /* 分页导航 */
+        .page-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            padding: 20px 0;
+        }
+        .page-nav .page-btn {
+            padding: 10px 20px;
+            border: 1.5px solid var(--border);
+            background: var(--card-bg);
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .page-nav .page-btn:active {
+            background: #e8f0fe;
+            border-color: var(--primary);
+        }
+        .page-nav .page-btn:disabled {
+            color: #c0c4cc;
+            border-color: #e5e7eb;
+            background: #f8f9fa;
+            cursor: not-allowed;
+        }
+        .page-nav .page-info {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .page-nav .page-info strong {
+            color: var(--text);
+        }
+
         /* 底部导航 */
         .bottom-nav {
             position: fixed;
@@ -328,6 +366,13 @@
             <p>加载中...</p>
         </div>
     </div>
+
+    <!-- 分页导航 -->
+    <div class="page-nav" id="pageNav" style="display:none;">
+        <button class="page-btn" id="prevBtn" onclick="goPage(currentPage - 1)">上一页</button>
+        <span class="page-info" id="pageInfo"></span>
+        <button class="page-btn" id="nextBtn" onclick="goPage(currentPage + 1)">下一页</button>
+    </div>
 </div>
 
 <div class="bottom-nav">
@@ -348,6 +393,8 @@
 <script>
     const ctxPath = '${pageContext.request.contextPath}';
     let currentYearMonth = '';
+    let currentPage = 1;
+    let totalPages = 1;
     const weekdays = ['日','一','二','三','四','五','六'];
 
     function showToast(msg, type) {
@@ -361,9 +408,10 @@
     function showLoading() { document.getElementById('overlay').classList.add('show'); }
     function hideLoading() { document.getElementById('overlay').classList.remove('show'); }
 
-    function loadRecords(yearMonth) {
+    function loadRecords(yearMonth, page) {
         showLoading();
-        fetch(ctxPath + '/miniapp?action=monthRecords&yearMonth=' + yearMonth)
+        page = page || 1;
+        fetch(ctxPath + '/miniapp?action=monthRecords&yearMonth=' + yearMonth + '&page=' + page)
             .then(r => r.json())
             .then(data => {
                 hideLoading();
@@ -372,6 +420,8 @@
                     return;
                 }
                 if (data.success) {
+                    currentPage = data.currentPage || 1;
+                    totalPages = data.totalPages || 1;
                     renderRecords(data);
                 } else {
                     showToast('加载失败', 'error');
@@ -397,6 +447,8 @@
 
         if (records.length === 0) {
             list.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><p>该月暂无考勤记录</p></div>';
+            // 无记录时也隐藏分页
+            document.getElementById('pageNav').style.display = 'none';
             return;
         }
 
@@ -446,6 +498,26 @@
             '</div>';
         });
         list.innerHTML = html;
+
+        // 渲染分页导航
+        renderPageNav(data);
+    }
+
+    function renderPageNav(data) {
+        var nav = document.getElementById('pageNav');
+        if (totalPages <= 1) {
+            nav.style.display = 'none';
+            return;
+        }
+        nav.style.display = 'flex';
+        document.getElementById('pageInfo').innerHTML = '共 <strong>' + (data.totalCount || 0) + '</strong> 条，第 <strong>' + currentPage + '</strong>/<strong>' + totalPages + '</strong> 页';
+        document.getElementById('prevBtn').disabled = (currentPage <= 1);
+        document.getElementById('nextBtn').disabled = (currentPage >= totalPages);
+    }
+
+    function goPage(p) {
+        if (p < 1 || p > totalPages) return;
+        loadRecords(currentYearMonth, p);
     }
 
     function prevMonth() {
@@ -454,8 +526,9 @@
         let m = parseInt(parts[1]) - 1;
         if (m < 1) { m = 12; y--; }
         currentYearMonth = y + '-' + String(m).padStart(2, '0');
+        currentPage = 1;
         updateMonthLabel();
-        loadRecords(currentYearMonth);
+        loadRecords(currentYearMonth, 1);
     }
 
     function nextMonth() {
@@ -464,8 +537,9 @@
         let m = parseInt(parts[1]) + 1;
         if (m > 12) { m = 1; y++; }
         currentYearMonth = y + '-' + String(m).padStart(2, '0');
+        currentPage = 1;
         updateMonthLabel();
-        loadRecords(currentYearMonth);
+        loadRecords(currentYearMonth, 1);
     }
 
     function updateMonthLabel() {
@@ -477,8 +551,9 @@
     document.addEventListener('DOMContentLoaded', function() {
         const now = new Date();
         currentYearMonth = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2, '0');
+        currentPage = 1;
         updateMonthLabel();
-        loadRecords(currentYearMonth);
+        loadRecords(currentYearMonth, 1);
     });
 </script>
 </body>

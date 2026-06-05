@@ -54,6 +54,7 @@
     <!-- 搜索表单 -->
     <div class="filter-bar">
         <input type="hidden" name="action" value="empList" form="searchForm">
+        <input type="hidden" name="page" value="${currentPage}" form="searchForm" id="pageInput">
         <div class="search-box">
             <input name="name" value="${param.name}" placeholder="搜索姓名..." form="searchForm" style="width:180px;">
         </div>
@@ -62,7 +63,7 @@
             <option value="">全部</option>
             <c:forEach items="${deptList}" var="d"><option value="${d.id}" ${param.deptId == d.id ? 'selected' : ''}>${d.deptName}</option></c:forEach>
         </select>
-        <button type="submit" class="btn btn-primary btn-sm" form="searchForm">&#128269; 搜索</button>
+        <button type="submit" class="btn btn-primary btn-sm" form="searchForm" onclick="document.getElementById('pageInput').value='1'">&#128269; 搜索</button>
         <a href="${pageContext.request.contextPath}/admin?action=empAdd" class="btn btn-success btn-sm">&#10133; 添加员工</a>
         <button type="button" class="btn btn-info btn-sm" onclick="document.getElementById('importFile').click()">&#128229; 批量导入</button>
         <a href="${pageContext.request.contextPath}/admin?action=exportTemplate" class="btn btn-outline btn-sm">&#128196; 下载模板</a>
@@ -104,10 +105,17 @@
                     </c:if>
                 </tbody>
             </table>
+            <jsp:include page="/views/common/pagination.jsp"/>
         </div>
     </div>
 </div>
 
+<script>
+function goPage(p) {
+    document.getElementById('pageInput').value = p;
+    document.getElementById('searchForm').submit();
+}
+</script>
 <script>
 function confirmDelete(id, name, empNo) {
     if (confirm('确定要删除员工 "' + name + '（' + empNo + '）" 吗？\n\n删除后将设置离职日期，该员工将无法登录系统。')) {

@@ -33,10 +33,7 @@ public interface AttendRecordMapper {
     AttendRecord findByEmpAndDate(@Param("empId") Integer empId, @Param("workDate") Date workDate);
 
     /**
-     * 【动态SQL】多条件组合查询考勤记录
-     * 使用@SelectProvider注解指定动态SQL提供者类
-     *
-     * 技术点: @SelectProvider + SQL类的SELECT/FROM/WHERE/AND()方法链式调用
+     * 【动态SQL】多条件组合查询考勤记录（支持分页）
      *
      * 支持的查询条件:
      *   - empId (Integer): 指定员工
@@ -44,11 +41,20 @@ public interface AttendRecordMapper {
      *   - endDate (Date): 日期范围-结束
      *   - status (String): 考勤状态筛选（正常/迟到/早退/缺勤）
      *   - deptId (Integer): 按部门筛选
+     *   - offset (Integer): 分页偏移量
+     *   - limit (Integer): 每页记录数
      *
      * @param params 条件Map
      * @return 符合条件的考勤记录列表
      */
     List<AttendRecord> findByConditions(Map<String, Object> params);
+
+    /**
+     * 统计符合条件的考勤记录总数
+     * @param params 条件Map（与findByConditions使用相同的条件）
+     * @return 记录总数
+     */
+    int countByConditions(Map<String, Object> params);
 
     /**
      * 新增考勤记录（首次打卡时使用）

@@ -89,7 +89,7 @@ public class AdminServlet extends HttpServlet {
         } finally { MyBatisUtils.closeSession(session); }
     }
 
-    /** 员工列表：支持多条件搜索 */
+    /** 员工列表：支持多条件搜索和分页 */
     private void empList(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         SqlSession session = MyBatisUtils.getSession();
@@ -102,8 +102,16 @@ public class AdminServlet extends HttpServlet {
             if (name != null && !name.isEmpty()) params.put("name", name);
             if (deptIdStr != null && !deptIdStr.isEmpty()) params.put("deptId", Integer.parseInt(deptIdStr));
 
+            // 分页参数
+            int[] pageInfo = parsePageParams(req);
+            params.put("offset", pageInfo[1]);
+            params.put("limit", pageInfo[2]);
+
             List<Employee> list = mapper.findByConditions(params);
+            int totalCount = mapper.countByConditions(params);
+            
             req.setAttribute("empList", list);
+            setPageAttributes(req, pageInfo[0], pageInfo[2], totalCount);
             
             // 获取部门列表用于下拉筛选
             DepartmentMapper deptMapper = session.getMapper(DepartmentMapper.class);
@@ -309,7 +317,7 @@ public class AdminServlet extends HttpServlet {
 
     /**
      * 考勤管理列表（管理员查看所有员工考勤）
-     * 支持按部门、日期范围、考勤状态筛选
+     * 支持按部门、日期范围、考勤状态筛选和分页
      */
     private void attendanceList(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
@@ -339,8 +347,16 @@ public class AdminServlet extends HttpServlet {
                 params.put("status", status);
             }
 
+            // 分页参数
+            int[] pageInfo = parsePageParams(req);
+            params.put("offset", pageInfo[1]);
+            params.put("limit", pageInfo[2]);
+
             java.util.List<AttendRecord> recordList = recordMapper.findByConditions(params);
+            int totalCount = recordMapper.countByConditions(params);
+            
             req.setAttribute("recordList", recordList);
+            setPageAttributes(req, pageInfo[0], pageInfo[2], totalCount);
             req.setAttribute("deptList", deptMapper.findAll());
             req.setAttribute("empList", empMapper.findAllWithDept());
 
@@ -461,7 +477,7 @@ public class AdminServlet extends HttpServlet {
         salaryList(req, resp);
     }
 
-    /** 薪资管理列表：查看所有员工的薪资记录 */
+    /** 薪资管理列表：查看所有员工的薪资记录（支持分页） */
     private void salaryList(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         // 优先从 request 属性获取（可能由 salaryGen 设置），其次从参数获取
@@ -473,8 +489,13 @@ public class AdminServlet extends HttpServlet {
             yearMonth = new SimpleDateFormat("yyyy-MM").format(new java.util.Date());
         }
 
-        List<Salary> list = salaryService.findByMonth(yearMonth);
+        // 分页参数
+        int[] pageInfo = parsePageParams(req);
+        List<Salary> list = salaryService.findByMonthPaged(yearMonth, pageInfo[1], pageInfo[2]);
+        int totalCount = salaryService.countByMonth(yearMonth);
+        
         req.setAttribute("salaryList", list);
+        setPageAttributes(req, pageInfo[0], pageInfo[2], totalCount);
         req.setAttribute("yearMonth", yearMonth);
         req.getRequestDispatcher("/views/admin/salary_list.jsp").forward(req, resp);
     }
@@ -773,6 +794,29 @@ public class AdminServlet extends HttpServlet {
     }
 
     // ==================== 工具方法 ====================
+
+    /**
+     * 解析分页参数
+     * @return int[3]: [page, offset, pageSize]
+     */
+    private int[] parsePageParams(HttpServletRequest req) {
+        int page = 1;
+        int pageSize = 10;
+        try { page = Integer.parseInt(req.getParameter("page")); if (page < 1) page = 1; } catch (Exception e) {}
+        try { pageSize = Integer.parseInt(req.getParameter("pageSize")); if (pageSize < 1) pageSize = 10; } catch (Exception e) {}
+        int offset = (page - 1) * pageSize;
+        return new int[]{page, offset, pageSize};
+    }
+
+    /**
+     * 设置分页属性到 request
+     */
+    private void setPageAttributes(HttpServletRequest req, int page, int pageSize, int totalCount) {
+        req.setAttribute("currentPage", page);
+        req.setAttribute("pageSize", pageSize);
+        req.setAttribute("totalCount", totalCount);
+        req.setAttribute("totalPages", (int) Math.ceil((double) totalCount / pageSize));
+    }
 
     private Employee getCurrentUser(HttpServletRequest req) {
         return (Employee) req.getSession().getAttribute("currentUser");

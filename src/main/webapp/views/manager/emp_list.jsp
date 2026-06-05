@@ -48,7 +48,7 @@
     <c:if test="${not empty errorMsg}"><div class="alert alert-danger" style="background:#fee2e2;color:#991b1b;padding:12px;border-radius:8px;margin-bottom:16px;">${errorMsg}</div></c:if>
 
     <div class="filter-bar">
-        <span style="font-weight:600;">团队成员列表（共 ${teamMembers.size()} 人）</span>
+        <span style="font-weight:600;">团队成员列表（共 ${totalCount != null ? totalCount : teamMembers.size()} 人）</span>
         <a href="${pageContext.request.contextPath}/mgr?action=dashboard" class="btn btn-outline btn-sm">返回首页</a>
     </div>
 
@@ -79,9 +79,14 @@
             </c:if>
         </div>
     </div>
+
+    <jsp:include page="/views/common/pagination.jsp"/>
 </div>
 
 <script>
+function goPage(p) {
+    window.location.href = '${pageContext.request.contextPath}/mgr?action=empList&page=' + p;
+}
 function confirmDelete(id, name, empNo) {
     if (confirm('确定要删除员工 "' + name + '（' + empNo + '）" 吗？\n\n删除后将设置离职日期，该员工将无法登录系统。')) {
         window.location.href = '${pageContext.request.contextPath}/mgr?action=empDelete&id=' + id;

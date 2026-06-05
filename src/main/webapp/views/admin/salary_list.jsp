@@ -35,7 +35,7 @@
     <!-- 薪资汇总 -->
     <div class="salary-summary">
         <div class="summary-item">
-            <div class="num">${salaryList.size()}</div>
+            <div class="num">${totalCount}</div>
             <div class="label">总人数</div>
         </div>
         <div class="summary-item">
@@ -74,11 +74,12 @@
 
     <!-- 操作栏 -->
     <div class="filter-bar">
-        <form method="get" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <form method="get" id="salaryForm" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
             <input type="hidden" name="action" value="salaryList">
+            <input type="hidden" name="page" id="pageInput" value="${currentPage}">
             <label>&#128197; 选择月份：</label>
             <input type="month" name="yearMonth" value="${yearMonth}">
-            <button type="submit" class="btn btn-primary btn-sm">&#128269; 查询</button>
+            <button type="submit" class="btn btn-primary btn-sm" onclick="document.getElementById('pageInput').value='1'">&#128269; 查询</button>
         </form>
         <form method="post" action="${pageContext.request.contextPath}/admin" style="display:inline;">
             <input type="hidden" name="action" value="salaryGen">
@@ -131,6 +132,8 @@
                 </tbody>
             </table>
 
+            <jsp:include page="/views/common/pagination.jsp"/>
+
             <!-- 薪资计算规则说明 -->
             <div class="rule-box">
                 <strong>&#128208; 薪资计算公式：</strong>
@@ -143,6 +146,13 @@
         </div>
     </div>
 </div>
+
+<script>
+function goPage(p) {
+    document.getElementById('pageInput').value = p;
+    document.getElementById('salaryForm').submit();
+}
+</script>
 
 <!-- 薪资条打印弹窗 -->
 <div id="slipModal" class="modal-overlay">
