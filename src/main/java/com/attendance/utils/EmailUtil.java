@@ -37,11 +37,6 @@ public class EmailUtil {
         return emailConfig != null ? emailConfig.getProperty(key) : null;
     }
 
-    private static String getConfig(String key, String defaultValue) {
-        String val = getConfig(key);
-        return (val != null && !val.isEmpty()) ? val : defaultValue;
-    }
-
     /**
      * 发送薪资通知邮件
      *
@@ -60,7 +55,7 @@ public class EmailUtil {
 
         // 如果未配置邮箱，使用模拟模式
         if (fromEmail == null || fromPassword == null ||
-                fromEmail.contains("your_email") || fromPassword.contains("your")) {
+                "your_email@qq.com".equals(fromEmail) || "your_smtp_auth_code".equals(fromPassword)) {
             System.out.println("[邮件] 薪资通知（模拟）：" + empName + " " + yearMonth + " 实发 " + actualSalary);
             return true;
         }

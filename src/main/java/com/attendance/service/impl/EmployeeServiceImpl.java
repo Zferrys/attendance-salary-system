@@ -15,8 +15,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public Employee loginByEmpNo(String empNo, String password) {
-        SqlSession session = MyBatisUtils.getSession();
+        SqlSession session = null;
         try {
+            session = MyBatisUtils.getSession();
             EmployeeMapper mapper = session.getMapper(EmployeeMapper.class);
             // 按工号查询（工号唯一，不会同名冲突）
             Employee emp = mapper.login(empNo);
@@ -25,6 +26,9 @@ public class EmployeeServiceImpl implements EmployeeService {
                 return emp;
             }
             return null;
+        } catch (Exception e) {
+            System.err.println("[登录] 数据库连接异常（工号: " + empNo + "): " + e.getMessage());
+            throw new RuntimeException("系统繁忙，请稍后再试", e);
         } finally {
             MyBatisUtils.closeSession(session);
         }

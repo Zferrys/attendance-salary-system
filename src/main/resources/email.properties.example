@@ -7,6 +7,8 @@
 # QQ邮箱 SMTP 服务器
 mail.smtp.host=smtp.qq.com
 mail.smtp.port=587
+mail.smtp.auth=true
+mail.smtp.starttls.enable=true
 
 # 发件邮箱地址（请输入你的 QQ 邮箱）
 mail.from.email=your_email@qq.com
