@@ -1,12 +1,18 @@
 package com.attendance.utils;
 
+import com.alibaba.druid.pool.DruidDataSourceFactory;
+import org.apache.ibatis.builder.xml.XMLConfigBuilder;
 import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.mapping.Environment;
+import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 
-import java.io.IOException;
+import javax.sql.DataSource;
 import java.io.InputStream;
+import java.util.Properties;
 
 /**
  * MyBatis 工具类（单例模式）
@@ -44,15 +50,30 @@ public class MyBatisUtils {
      */
     static {
         try {
-            // 从classpath读取mybatis-config.xml配置文件
+            // 1. 加载 mybatis-config.xml 获取全局配置（settings、typeAliases、mappers）
             String resource = "mybatis-config.xml";
             InputStream inputStream = Resources.getResourceAsStream(resource);
+            XMLConfigBuilder parser = new XMLConfigBuilder(inputStream);
+            Configuration configuration = parser.parse();
 
-            // 使用SqlSessionFactoryBuilder构建工厂
-            sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+            // 2. 加载 Druid 连接池配置
+            Properties druidProps = new Properties();
+            try (InputStream druidStream = Resources.getResourceAsStream("druid.properties")) {
+                druidProps.load(druidStream);
+            }
 
-            System.out.println("[MyBatis] 初始化成功！SqlSessionFactory已创建。");
-        } catch (IOException e) {
+            // 3. 创建真正的 Druid 数据源（使 keepAlive、testWhileIdle 等参数真正生效）
+            DataSource dataSource = DruidDataSourceFactory.createDataSource(druidProps);
+
+            // 4. 用 Druid 数据源替换 MyBatis 默认的 POOLED 连接池
+            Environment environment = new Environment("development", new JdbcTransactionFactory(), dataSource);
+            configuration.setEnvironment(environment);
+
+            // 5. 构建 SqlSessionFactory
+            sqlSessionFactory = new SqlSessionFactoryBuilder().build(configuration);
+
+            System.out.println("[MyBatis] 初始化成功！Druid 连接池已启用。");
+        } catch (Exception e) {
             throw new RuntimeException("MyBatis初始化失败！请检查配置文件路径和内容。", e);
         }
     }
