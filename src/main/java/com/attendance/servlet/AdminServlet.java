@@ -579,10 +579,9 @@ public class AdminServlet extends HttpServlet {
         }
 
         List<Salary> list = salaryService.findByMonth(yearMonth);
-        req.setAttribute("salaryList", list);
         req.setAttribute("yearMonth", yearMonth);
 
-        // 汇总统计
+        // 汇总统计（基于全量数据）
         int totalCount = list.size();
         int paidCount = 0, unpaidCount = 0;
         double totalActual = 0, totalBase = 0, totalBonus = 0, totalLate = 0, totalLeave = 0;
@@ -604,6 +603,15 @@ public class AdminServlet extends HttpServlet {
         req.setAttribute("totalBonus", totalBonus);
         req.setAttribute("totalLate", totalLate);
         req.setAttribute("totalLeave", totalLeave);
+
+        // 明细列表分页
+        int[] pageInfo = parsePageParams(req);
+        int page = pageInfo[0], pageSize = pageInfo[2];
+        int fromIndex = Math.min((page - 1) * pageSize, list.size());
+        int toIndex = Math.min(fromIndex + pageSize, list.size());
+        List<Salary> pagedList = list.subList(fromIndex, toIndex);
+        req.setAttribute("salaryList", pagedList);
+        setPageAttributes(req, page, pageSize, totalCount);
 
         req.getRequestDispatcher("/views/admin/salary_report.jsp").forward(req, resp);
     }

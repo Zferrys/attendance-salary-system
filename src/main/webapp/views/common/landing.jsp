@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>考勤薪资管理系统 - 智能企业考勤薪资一体化平台</title>
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css?v=1.1">
   <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
 </head>
 <body class="landing-page">

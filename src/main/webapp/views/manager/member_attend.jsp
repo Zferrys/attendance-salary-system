@@ -5,6 +5,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <meta name="_csrf" content="${pageContext.session.getAttribute('CSRF_TOKEN')}">
     <title>${member.name} 的考勤日历 - 考勤薪资系统</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
     <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
@@ -225,8 +226,8 @@ function submitAttendEdit() {
     // 添加CSRF token
     var csrfInput = document.createElement('input');
     csrfInput.type = 'hidden';
-    csrfInput.name = 'csrfToken';
-    csrfInput.value = '${csrfToken}';
+    csrfInput.name = '_csrf';
+    csrfInput.value = document.querySelector('meta[name="_csrf"]').content;
     form.appendChild(csrfInput);
     
     var actionInput = document.createElement('input');

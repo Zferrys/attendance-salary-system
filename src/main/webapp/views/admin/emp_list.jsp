@@ -44,8 +44,7 @@
     <a href="${pageContext.request.contextPath}/admin?action=empAdd" class="btn btn-success btn-sm">&#10133; 添加员工</a>
     <button type="button" class="btn btn-info btn-sm" onclick="document.getElementById('importFile').click()">&#128229; 批量导入</button>
     <a href="${pageContext.request.contextPath}/admin?action=exportTemplate" class="btn btn-outline btn-sm">&#128196; 下载模板</a>
-    <form id="importForm" action="${pageContext.request.contextPath}/admin?action=empImport" method="post" enctype="multipart/form-data" style="display:none;">
-      <input type="hidden" name="_csrf" value="${pageContext.session.getAttribute('CSRF_TOKEN')}">
+    <form id="importForm" action="${pageContext.request.contextPath}/admin?action=empImport&_csrf=${pageContext.session.getAttribute('CSRF_TOKEN')}" method="post" enctype="multipart/form-data" style="display:none;">
       <input type="file" id="importFile" name="file" accept=".xlsx,.xls" onchange="document.getElementById('importForm').submit();showLoading('正在导入...')">
     </form>
   </div>

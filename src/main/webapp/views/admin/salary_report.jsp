@@ -219,6 +219,7 @@
                     </c:if>
                 </tbody>
             </table>
+            <jsp:include page="/views/common/pagination.jsp"/>
         </div>
     </div>
 
@@ -228,5 +229,10 @@
         <a href="${pageContext.request.contextPath}/admin?action=salaryList&yearMonth=${yearMonth}" class="btn btn-primary btn-sm">&#9889; 进入薪资管理（生成/发放）</a>
     </div>
 </div>
+<script>
+function goPage(p) {
+    window.location.href = '${pageContext.request.contextPath}/admin?action=salaryReport&yearMonth=${yearMonth}&page=' + p;
+}
+</script>
 </body>
 </html>

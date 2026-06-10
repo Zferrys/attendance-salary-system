@@ -64,35 +64,31 @@
                 <a href="${pageContext.request.contextPath}/mgr?action=memberAttend&empId=${m.id}&yearMonth=${yearMonth}" class="btn btn-outline btn-sm">查看明细</a>
             </div>
             <div class="member-stats">
-                <% 
-                    // 从 attendList 计算当月统计
-                    com.attendance.mapper.AttendRecordMapper attendMapper = null;
-                    java.util.List<com.attendance.entity.AttendRecord> attendList = m.getAttendList();
-                    int normalDays = 0, lateDays = 0, earlyDays = 0, absentDays = 0;
-                    if (attendList != null) {
-                        for (com.attendance.entity.AttendRecord ar : attendList) {
-                            String status = ar.getStatus();
-                            if ("正常".equals(status)) normalDays++;
-                            else if ("迟到".equals(status)) lateDays++;
-                            else if ("早退".equals(status)) earlyDays++;
-                            else if ("缺勤".equals(status)) absentDays++;
-                        }
-                    }
-                %>
+                <%-- 从 attendList 计算当月统计 --%>
+                <c:set var="normalDays" value="0"/>
+                <c:set var="lateDays" value="0"/>
+                <c:set var="earlyDays" value="0"/>
+                <c:set var="absentDays" value="0"/>
+                <c:forEach items="${m.attendList}" var="ar">
+                    <c:if test="${ar.status eq '正常'}"><c:set var="normalDays" value="${normalDays + 1}"/></c:if>
+                    <c:if test="${ar.status eq '迟到'}"><c:set var="lateDays" value="${lateDays + 1}"/></c:if>
+                    <c:if test="${ar.status eq '早退'}"><c:set var="earlyDays" value="${earlyDays + 1}"/></c:if>
+                    <c:if test="${ar.status eq '缺勤'}"><c:set var="absentDays" value="${absentDays + 1}"/></c:if>
+                </c:forEach>
                 <div class="member-stat normal">
-                    <div class="num"><%=normalDays%></div>
+                    <div class="num">${normalDays}</div>
                     <div class="lbl">正常</div>
                 </div>
                 <div class="member-stat late">
-                    <div class="num"><%=lateDays%></div>
+                    <div class="num">${lateDays}</div>
                     <div class="lbl">迟到</div>
                 </div>
                 <div class="member-stat early">
-                    <div class="num"><%=earlyDays%></div>
+                    <div class="num">${earlyDays}</div>
                     <div class="lbl">早退</div>
                 </div>
                 <div class="member-stat absent">
-                    <div class="num"><%=absentDays%></div>
+                    <div class="num">${absentDays}</div>
                     <div class="lbl">缺勤</div>
                 </div>
             </div>

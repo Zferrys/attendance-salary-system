@@ -12,7 +12,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="_csrf" content="${csrfToken}">
   <title>考勤薪资管理系统 - 登录</title>
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css?v=1.1">
   <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
   <style>
     .login-bg-dots {

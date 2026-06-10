@@ -2,6 +2,8 @@ package com.attendance.utils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Base64;
 
@@ -14,6 +16,10 @@ import java.util.Base64;
  *   1. 在需要保护的表单中调用 CsrfUtil.getToken(request) 获取token
  *   2. 将token放入隐藏字段 <input type="hidden" name="_csrf" value="${csrfToken}">
  *   3. 在服务端调用 CsrfUtil.validate(request) 验证token
+ *
+ * 特殊处理:
+ *   multipart/form-data 请求无法通过 request.getParameter() 获取表单字段，
+ *   此时会从 URL 查询字符串和请求头中尝试获取 _csrf 参数。
  */
 public class CsrfUtil {
 
@@ -59,12 +65,41 @@ public class CsrfUtil {
             return false;
         }
 
+        // 1. 先从标准请求参数获取（对普通表单有效）
         String requestToken = request.getParameter("_csrf");
+
+        // 2. multipart/form-data 请求无法通过 getParameter() 获取表单字段，
+        //    此时尝试从 URL 查询字符串中提取 _csrf
+        if (requestToken == null) {
+            requestToken = extractFromQueryString(request.getQueryString());
+        }
+
+        // 3. 最后尝试从请求头获取（AJAX 请求）
         if (requestToken == null) {
             requestToken = request.getHeader("X-CSRF-TOKEN");
         }
 
         return sessionToken.equals(requestToken);
+    }
+
+    /**
+     * 从查询字符串中提取指定参数值
+     */
+    private static String extractFromQueryString(String queryString) {
+        if (queryString == null || queryString.isEmpty()) {
+            return null;
+        }
+        for (String param : queryString.split("&")) {
+            String[] kv = param.split("=", 2);
+            if (kv.length == 2 && "_csrf".equals(kv[0])) {
+                try {
+                    return URLDecoder.decode(kv[1], StandardCharsets.UTF_8.name());
+                } catch (Exception e) {
+                    return kv[1];
+                }
+            }
+        }
+        return null;
     }
 
     /**

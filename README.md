@@ -168,11 +168,14 @@ attendance-salary-system/
         │   │   ├── AuthFilter.java      # 权限认证过滤器
         │   │   └── EncodingFilter.java  # UTF-8 编码过滤器
         │   │
-        │   └── utils/                   # 工具类（5个）
+        │   └── utils/                   # 工具类（8个）
         │       ├── MyBatisUtils.java    # MyBatis会话管理
         │       ├── EmailUtil.java       # 邮件发送工具
         │       ├── ExcelImportUtil.java # Excel导入解析
         │       ├── MD5Util.java         # MD5加密
+        │       ├── PasswordUtil.java    # 密码散列（SHA-256+盐值）
+        │       ├── CsrfUtil.java        # CSRF Token生成与验证
+        │       ├── LoginGuardUtil.java  # 登录安全防护（IP/账号锁定）
         │       └── WebUtils.java        # Web请求工具
         │
         ├── resources/
@@ -256,6 +259,34 @@ attendance-salary-system/
 批量导入或新增员工时，系统根据角色前缀自动分配工号：
 - 查询该前缀下的最大工号（如 E005）
 - 自动递增生成新工号（如 E006）
+
+---
+
+## 🛡 安全机制
+
+### CSRF 防护 (CsrfUtil + AuthFilter)
+- 每个 Session 生成唯一的 32 字节 Base64 URL-Safe Token
+- 所有 POST/PUT/DELETE 请求必须携带 `_csrf` 参数或 `X-CSRF-TOKEN` 请求头
+- `common.js` 自动为页面中所有 POST 表单注入 `_csrf` 隐藏字段
+- 支持 multipart/form-data 文件上传场景（从 URL 查询字符串提取 Token）
+
+### 登录安全防护 (LoginGuardUtil)
+- **IP 锁定**：同一 IP 30 秒内连续失败 5 次 → 锁定 5 分钟
+- **账号锁定**：同一账号累计失败 5 次 → 锁定 15 分钟
+
+### 密码安全 (PasswordUtil)
+- 使用 SHA-256 + 随机盐值（32 字节）进行密码散列
+- 兼容旧版 MD5 密码，登录时自动升级
+
+### 文件上传安全
+- 文件大小限制 10MB
+- 扩展名白名单（仅 .xlsx/.xls）
+- MIME 类型校验
+
+### 安全响应头 (AuthFilter)
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `X-XSS-Protection: 1; mode=block`
 
 ---
 
@@ -386,19 +417,23 @@ cp src/main/resources/email.properties.example src/main/resources/email.properti
 | 1 | 严重 | 邮箱密码硬编码在源码中 | ✅ 已修复（改为读取配置文件） |
 | 2 | 严重 | init.sql 中 UPDATE 在 INSERT 之前 | ✅ 已修复 |
 | 3 | 中危 | AttendRecordMapper.xml 中 empName 映射重复 | ⏳ 待修复 |
-| 4 | 中危 | MD5 密码加密不够安全 | ⏳ 待升级 |
+| 4 | 中危 | MD5 密码加密不够安全 | ✅ 已修复（PasswordUtil SHA-256+盐值） |
 | 5 | 中危 | 部分 Servlet 中 SqlSession 管理不统一 | ⏳ 待优化 |
-| 6 | 低 | 三个 Servlet 中存在重复的分页工具代码 | ⏳ 待提取 |
+| 6 | 低 | 三个 Servlet 中存在重复的分页工具代码 | ✅ 已修复（提取到 WebUtils.setPageAttributes） |
 | 7 | 低 | MyBatis 数据源未真正使用 Druid 连接池 | ⏳ 待修复 |
 | 8 | 低 | Service 层使用不一致 | ⏳ 待统一 |
+| 9 | 中危 | 无 CSRF 防护，存在跨站请求伪造风险 | ✅ 已修复（CsrfUtil + AuthFilter + common.js） |
+| 10 | 中危 | 无登录失败限制，存在暴力破解风险 | ✅ 已修复（LoginGuardUtil IP/账号锁定） |
 
 ---
 
 ## 📝 待优化项
 
-- [ ] 密码加密升级为 BCrypt 或 SHA-256 + 随机盐值
+- [x] ~~密码加密升级为 BCrypt 或 SHA-256 + 随机盐值~~（已通过 PasswordUtil 实现）
+- [x] ~~添加 CSRF 防护~~（已通过 CsrfUtil + AuthFilter 实现）
+- [x] ~~添加登录安全防护~~（已通过 LoginGuardUtil 实现）
+- [x] ~~提取公共分页代码到工具类~~（已提取到 WebUtils）
 - [ ] 统一 Service 层调用，Servlet 不直接操作 Mapper
-- [ ] 提取公共分页代码到 BaseServlet 或工具类
 - [ ] 引入 ThreadLocal 管理 SqlSession 以支持事务
 - [ ] 添加单元测试覆盖核心计算逻辑
 - [ ] JSP 视图迁移到现代前端框架（Vue/React）
