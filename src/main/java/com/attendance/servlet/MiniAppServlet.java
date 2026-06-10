@@ -6,6 +6,7 @@ import com.attendance.mapper.EmployeeMapper;
 import com.attendance.mapper.LeaveRequestMapper;
 import com.attendance.service.SalaryService;
 import com.attendance.service.impl.SalaryServiceImpl;
+import com.attendance.utils.LoginGuardUtil;
 import com.attendance.utils.MD5Util;
 import com.attendance.utils.MyBatisUtils;
 import com.google.gson.Gson;
@@ -142,7 +143,7 @@ public class MiniAppServlet extends HttpServlet {
         req.getRequestDispatcher("/views/miniapp/records.jsp").forward(req, resp);
     }
 
-    /** 登录验证（返回JSON） */
+    /** 登录验证（返回JSON）- 安全增强版：与PC端共享IP/账号锁定机制 */
     private void doLogin(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
         resp.setContentType("application/json;charset=UTF-8");
@@ -150,6 +151,7 @@ public class MiniAppServlet extends HttpServlet {
 
         String empNo = req.getParameter("empNo");
         String password = req.getParameter("password");
+        String clientIp = LoginGuardUtil.getClientIp(req);
 
         if (empNo == null || empNo.trim().isEmpty() ||
                 password == null || password.trim().isEmpty()) {
@@ -159,13 +161,37 @@ public class MiniAppServlet extends HttpServlet {
             return;
         }
 
+        empNo = empNo.trim();
+        password = password.trim();
+
+        // 检查IP是否被锁定（与PC端共享锁定状态）
+        String ipLockMsg = LoginGuardUtil.checkLocked(clientIp);
+        if (ipLockMsg != null) {
+            result.put("success", false);
+            result.put("message", ipLockMsg);
+            resp.getWriter().write(gson.toJson(result));
+            return;
+        }
+
+        // 检查账号是否被锁定（与PC端共享锁定状态）
+        String accountLockMsg = LoginGuardUtil.checkAccountLocked(empNo);
+        if (accountLockMsg != null) {
+            result.put("success", false);
+            result.put("message", accountLockMsg);
+            resp.getWriter().write(gson.toJson(result));
+            return;
+        }
+
         SqlSession session = MyBatisUtils.getSession();
         try {
             EmployeeMapper mapper = session.getMapper(EmployeeMapper.class);
-            Employee emp = mapper.login(empNo.trim());
+            Employee emp = mapper.login(empNo);
 
-            if (emp != null && MD5Util.verify(password.trim(), emp.getPassword())) {
-                // 登录成功：存入 session 和返回用户信息
+            if (emp != null && MD5Util.verify(password, emp.getPassword())) {
+                // 登录成功：清除失败记录（与PC端共享）
+                LoginGuardUtil.clearFailures(clientIp, empNo);
+                
+                // 存入 session 和返回用户信息
                 req.getSession().setAttribute("miniAppUser", emp);
                 
                 result.put("success", true);
@@ -177,6 +203,8 @@ public class MiniAppServlet extends HttpServlet {
                 userInfo.put("position", emp.getPosition());
                 result.put("user", userInfo);
             } else {
+                // 登录失败：记录失败（与PC端共享）
+                LoginGuardUtil.recordFailure(clientIp, empNo);
                 result.put("success", false);
                 result.put("message", "工号或密码错误！");
             }

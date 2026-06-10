@@ -2,16 +2,16 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><title>添加员工 - 考勤薪资系统</title>
+<head><meta charset="UTF-8"><meta name="_csrf" content="${pageContext.session.getAttribute('CSRF_TOKEN')}"><title>添加员工 - 考勤薪资系统</title>
 <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
 <style>
     .form-card { max-width: 650px; margin: 0 auto; }
     .form-section { margin-bottom: 20px; }
-    .form-section-title { font-size: 14px; font-weight: 600; color: #4b5563; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #f0f0f0; }
+    .form-section-title { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
     .form-row { display: flex; gap: 16px; }
     .form-row .form-group { flex: 1; }
-    .input-hint { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+    .input-hint { font-size: 12px; color: var(--ink-muted); margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -55,7 +55,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>工号</label>
-                            <input name="empNo" id="empNo" class="form-control" readonly style="background:#f3f4f6;color:#6b7280;">
+                            <input name="empNo" id="empNo" class="form-control" readonly style="background:var(--surface-hover);color:var(--ink-muted);">
                             <div class="input-hint" id="empNoHint">选择角色后系统将自动生成工号</div>
                         </div>
                         <div class="form-group">

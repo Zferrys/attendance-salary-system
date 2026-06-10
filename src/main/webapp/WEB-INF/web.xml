@@ -18,7 +18,7 @@
 
     <!-- ==================== 欢迎页面（默认首页） ==================== -->
     <welcome-file-list>
-        <welcome-file>views/common/login.jsp</welcome-file>
+        <welcome-file>views/common/landing.jsp</welcome-file>
     </welcome-file-list>
 
     <!-- ==================== 编码过滤器（解决中文乱码） ==================== -->

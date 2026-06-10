@@ -350,7 +350,7 @@ public class ManagerServlet extends HttpServlet {
         String yearMonth = req.getParameter("yearMonth");
 
         if (newStatus == null || newStatus.isEmpty()) {
-            req.setAttribute("errorMsg", "请选择要修改的状态！");
+            req.getSession().setAttribute("errorMsg", "请选择要修改的状态！");
             resp.sendRedirect(req.getContextPath() + "/mgr?action=memberAttend&empId=" + empIdStr + "&yearMonth=" + yearMonth);
             return;
         }
@@ -360,26 +360,18 @@ public class ManagerServlet extends HttpServlet {
             AttendRecordMapper attendMapper = session.getMapper(AttendRecordMapper.class);
             EmployeeMapper empMapper = session.getMapper(EmployeeMapper.class);
 
-            // 先查询该考勤记录对应的员工，校验权限
-            // 通过recordId查询记录，然后校验员工是否属于主管部门
-            AttendRecord targetRecord = null;
-            java.util.List<AttendRecord> allRecords = attendMapper.findByConditions(new java.util.HashMap<>());
-            for (AttendRecord r : allRecords) {
-                if (r.getId().equals(recordId)) {
-                    targetRecord = r;
-                    break;
-                }
-            }
+            // 使用 findById 直接查询，提高效率
+            AttendRecord targetRecord = attendMapper.findById(recordId);
 
             if (targetRecord == null) {
-                req.setAttribute("errorMsg", "考勤记录不存在！");
+                req.getSession().setAttribute("errorMsg", "考勤记录不存在！");
                 resp.sendRedirect(req.getContextPath() + "/mgr?action=memberAttend&empId=" + empIdStr + "&yearMonth=" + yearMonth);
                 return;
             }
 
             Employee recordEmp = empMapper.findById(targetRecord.getEmpId());
             if (recordEmp == null || !recordEmp.getDeptId().equals(manager.getDeptId())) {
-                req.setAttribute("errorMsg", "无权修改该员工的考勤记录！");
+                req.getSession().setAttribute("errorMsg", "无权修改该员工的考勤记录！");
                 resp.sendRedirect(req.getContextPath() + "/mgr?action=memberAttend&empId=" + empIdStr + "&yearMonth=" + yearMonth);
                 return;
             }
@@ -390,16 +382,16 @@ public class ManagerServlet extends HttpServlet {
             record.setStatus(newStatus);
             attendMapper.update(record);
             session.commit();
-            req.setAttribute("msg", "考勤状态已更新为：" + newStatus);
+            req.getSession().setAttribute("msg", "考勤状态已更新为：" + newStatus);
         } catch (Exception e) {
             session.rollback();
-            req.setAttribute("errorMsg", "更新失败：" + e.getMessage());
+            req.getSession().setAttribute("errorMsg", "更新失败：" + e.getMessage());
             e.printStackTrace();
         } finally {
             MyBatisUtils.closeSession(session);
         }
 
-        // 重定向回考勤明细页
+        // 重定向回考勤明细页（使用session传递消息）
         resp.sendRedirect(req.getContextPath() + "/mgr?action=memberAttend&empId=" + empIdStr + "&yearMonth=" + yearMonth);
     }
 

@@ -55,22 +55,24 @@ public interface SalaryService {
     List<Salary> findByMonth(String yearMonth);
 
     /**
-     * 分页查询指定月份的薪资记录
+     * 分页查询指定月份的薪资记录（支持按工号/姓名搜索）
      *
      * @param yearMonth 年月
      * @param offset 偏移量
      * @param limit 每页条数
+     * @param search 搜索关键词（工号或姓名，可为null）
      * @return 该月的薪资分页列表
      */
-    List<Salary> findByMonthPaged(String yearMonth, int offset, int limit);
+    List<Salary> findByMonthPaged(String yearMonth, int offset, int limit, String search);
 
     /**
-     * 统计指定月份的薪资记录总数
+     * 统计指定月份的薪资记录总数（支持按工号/姓名搜索）
      *
      * @param yearMonth 年月
+     * @param search 搜索关键词（工号或姓名，可为null）
      * @return 记录总数
      */
-    int countByMonth(String yearMonth);
+    int countByMonth(String yearMonth, String search);
 
     /**
      * 根据ID查询单条薪资详情（含完整关联信息）

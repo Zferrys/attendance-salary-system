@@ -7,19 +7,19 @@
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
 <style>
     .timeline { position: relative; padding-left: 24px; }
-    .timeline::before { content: ''; position: absolute; left: 6px; top: 0; bottom: 0; width: 2px; background: #e5e7eb; }
-    .timeline-item { position: relative; margin-bottom: 16px; padding: 16px; background: #fff; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid #f0f0f0; }
-    .timeline-item::before { content: ''; position: absolute; left: -22px; top: 20px; width: 10px; height: 10px; border-radius: 50%; background: #d1d5db; border: 2px solid #fff; }
-    .timeline-item.status-待审批::before { background: #f0a020; }
-    .timeline-item.status-已批准::before { background: #0d9e6c; }
-    .timeline-item.status-已拒绝::before { background: #dc3545; }
-    .timeline-item.status-已撤销::before { background: #9ca3af; }
+    .timeline::before { content: ''; position: absolute; left: 6px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+    .timeline-item { position: relative; margin-bottom: 16px; padding: 16px; background: var(--surface); border-radius: 10px; border: 1px solid var(--border); }
+    .timeline-item::before { content: ''; position: absolute; left: -23px; top: 20px; width: 12px; height: 12px; border-radius: 50%; background: var(--ink-muted); border: 2px solid var(--bg); }
+    .timeline-item.status-待审批::before { background: var(--warning); }
+    .timeline-item.status-已批准::before { background: var(--success); }
+    .timeline-item.status-已拒绝::before { background: var(--danger); }
+    .timeline-item.status-已撤销::before { background: var(--ink-muted); }
     .timeline-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .timeline-header .type { font-weight: 600; font-size: 15px; color: #1f2937; }
-    .timeline-body { font-size: 13px; color: #6b7280; line-height: 1.8; }
-    .timeline-body strong { color: #4b5563; }
+    .timeline-header .type { font-weight: 600; font-size: 15px; color: var(--ink); }
+    .timeline-body { font-size: 13px; color: var(--ink-secondary); line-height: 1.8; }
+    .timeline-body strong { color: var(--ink); }
     .timeline-footer { margin-top: 10px; display: flex; justify-content: space-between; align-items: center; }
-    .timeline-date { font-size: 12px; color: #9ca3af; }
+    .timeline-date { font-size: 12px; color: var(--ink-muted); }
 </style>
 </head>
 <body>
@@ -40,7 +40,7 @@
     <c:if test="${not empty msg}"><div class="alert alert-success">${msg}</div></c:if>
 
     <div style="text-align:right;margin-bottom:16px;">
-        <span style="float:left;color:#6b7280;font-size:14px;line-height:40px;">共 <strong>${totalCount}</strong> 条记录</span>
+        <span style="float:left;color:var(--ink-secondary);font-size:14px;line-height:40px;">共 <strong>${totalCount}</strong> 条记录</span>
         <a href="${pageContext.request.contextPath}/employee?action=applyLeave" class="btn btn-primary">&#10133; 新建请假</a>
     </div>
 

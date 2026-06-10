@@ -316,7 +316,7 @@ public class SalaryServiceImpl implements SalaryService {
     }
 
     @Override
-    public List<Salary> findByMonthPaged(String yearMonth, int offset, int limit) {
+    public List<Salary> findByMonthPaged(String yearMonth, int offset, int limit, String search) {
         SqlSession session = MyBatisUtils.getSession();
         try {
             SalaryMapper mapper = session.getMapper(SalaryMapper.class);
@@ -324,6 +324,9 @@ public class SalaryServiceImpl implements SalaryService {
             params.put("yearMonth", yearMonth);
             params.put("offset", offset);
             params.put("limit", limit);
+            if (search != null && !search.trim().isEmpty()) {
+                params.put("search", search.trim());
+            }
             return mapper.findByMonth(params);
         } finally {
             MyBatisUtils.closeSession(session);
@@ -331,11 +334,16 @@ public class SalaryServiceImpl implements SalaryService {
     }
 
     @Override
-    public int countByMonth(String yearMonth) {
+    public int countByMonth(String yearMonth, String search) {
         SqlSession session = MyBatisUtils.getSession();
         try {
             SalaryMapper mapper = session.getMapper(SalaryMapper.class);
-            return mapper.countByMonth(yearMonth);
+            Map<String, Object> params = new HashMap<>();
+            params.put("yearMonth", yearMonth);
+            if (search != null && !search.trim().isEmpty()) {
+                params.put("search", search.trim());
+            }
+            return mapper.countByMonth(params);
         } finally {
             MyBatisUtils.closeSession(session);
         }

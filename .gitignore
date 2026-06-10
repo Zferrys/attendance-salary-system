@@ -33,3 +33,6 @@ src/main/resources/email.properties
 
 # Upload temp
 uploads/
+
+# CodeBuddy AI working directory
+.codebuddy/

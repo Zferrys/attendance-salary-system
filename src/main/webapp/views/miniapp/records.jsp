@@ -9,21 +9,23 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         :root {
-            --primary: #1a73e8;
-            --success: #0d9e6c;
-            --warning: #f0a020;
-            --danger: #dc3545;
-            --bg: #f0f2f5;
-            --card-bg: #ffffff;
-            --text: #1f2937;
-            --text-secondary: #6b7280;
-            --border: #e5e7eb;
+            --bg-start: #f0f4ff;
+            --bg-mid: #faf5ff;
+            --bg-end: #f0f9ff;
+            --card-bg: rgba(255,255,255,0.92);
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --border: rgba(124,58,237,0.08);
+            --brand: #7c3aed;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
             --radius: 16px;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-            background: var(--bg);
+            background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-mid) 50%, var(--bg-end) 100%);
             color: var(--text);
             min-height: 100vh;
             padding-bottom: 80px;
@@ -31,8 +33,11 @@
         }
 
         .header {
-            background: linear-gradient(135deg, #1e3a5f 0%, #2980b9 100%);
-            color: #fff;
+            background: rgba(255,255,255,0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
             padding: 16px 20px;
             display: flex;
             align-items: center;
@@ -40,20 +45,20 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
             padding-top: max(16px, env(safe-area-inset-top));
         }
         .header .back-btn {
-            color: #fff;
+            color: var(--brand);
             text-decoration: none;
             font-size: 22px;
             padding: 4px 8px;
             border-radius: 8px;
         }
-        .header .back-btn:active { background: rgba(255,255,255,0.15); }
+        .header .back-btn:active { background: rgba(124,58,237,0.06); }
         .header .title {
             font-size: 17px;
             font-weight: 700;
+            color: var(--text);
         }
 
         .container {
@@ -62,23 +67,24 @@
             padding: 16px;
         }
 
-        /* 月份选择器 */
         .month-picker {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 16px;
             background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
             border-radius: var(--radius);
             padding: 14px 20px;
             margin-bottom: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
         .month-picker .arrow-btn {
             width: 36px;
             height: 36px;
-            border: 1.5px solid var(--border);
-            background: #fff;
+            border: 1px solid rgba(124,58,237,0.15);
+            background: rgba(124,58,237,0.04);
             border-radius: 50%;
             font-size: 16px;
             cursor: pointer;
@@ -89,17 +95,17 @@
             transition: all 0.2s;
         }
         .month-picker .arrow-btn:active {
-            background: #f0f2f5;
-            border-color: var(--primary);
+            background: rgba(124,58,237,0.1);
+            border-color: var(--brand);
         }
         .month-picker .month-label {
             font-size: 18px;
             font-weight: 700;
             min-width: 120px;
             text-align: center;
+            color: var(--text);
         }
 
-        /* 统计 */
         .stats-row {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -108,10 +114,12 @@
         }
         .stat-mini {
             background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
             border-radius: 12px;
             padding: 14px 8px;
             text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
         .stat-mini .stat-num {
             font-size: 22px;
@@ -121,14 +129,13 @@
         .stat-mini .stat-num.green { color: var(--success); }
         .stat-mini .stat-num.amber { color: var(--warning); }
         .stat-mini .stat-num.red { color: var(--danger); }
-        .stat-mini .stat-num.blue { color: var(--primary); }
+        .stat-mini .stat-num.blue { color: #3b82f6; }
         .stat-mini .stat-text {
             font-size: 11px;
             color: var(--text-secondary);
             margin-top: 4px;
         }
 
-        /* 记录列表 */
         .record-list {
             display: flex;
             flex-direction: column;
@@ -136,15 +143,17 @@
         }
         .record-item {
             background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
             border-radius: 12px;
             padding: 16px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
             display: flex;
             align-items: center;
             gap: 14px;
             transition: all 0.2s;
         }
-        .record-item:active { background: #f8fafc; }
+        .record-item:active { background: rgba(124,58,237,0.04); }
         .record-item .date-badge {
             width: 52px;
             height: 52px;
@@ -156,10 +165,10 @@
             flex-shrink: 0;
             font-weight: 700;
         }
-        .date-badge.normal { background: #d1fae5; color: #065f46; }
-        .date-badge.late { background: #fef3c7; color: #92400e; }
-        .date-badge.early { background: #fef3c7; color: #92400e; }
-        .date-badge.absent { background: #fee2e2; color: #991b1b; }
+        .date-badge.normal { background: rgba(16,185,129,0.12); color: #059669; }
+        .date-badge.late { background: rgba(245,158,11,0.12); color: #d97706; }
+        .date-badge.early { background: rgba(245,158,11,0.12); color: #d97706; }
+        .date-badge.absent { background: rgba(239,68,68,0.12); color: #dc2626; }
         .date-badge .date-day {
             font-size: 20px;
             line-height: 1;
@@ -186,6 +195,7 @@
         .record-info .info-value {
             font-weight: 600;
             font-size: 13px;
+            color: var(--text);
         }
         .record-info .info-value.time {
             font-family: 'SF Mono', 'Menlo', monospace;
@@ -197,20 +207,19 @@
             font-size: 11px;
             font-weight: 600;
         }
-        .status-tag.normal { background: #d1fae5; color: #065f46; }
-        .status-tag.late { background: #fef3c7; color: #92400e; }
-        .status-tag.early { background: #fde68a; color: #92400e; }
-        .status-tag.absent { background: #fee2e2; color: #991b1b; }
+        .status-tag.normal { background: rgba(16,185,129,0.1); color: #059669; }
+        .status-tag.late { background: rgba(245,158,11,0.1); color: #d97706; }
+        .status-tag.early { background: rgba(251,191,36,0.1); color: #b45309; }
+        .status-tag.absent { background: rgba(239,68,68,0.1); color: #dc2626; }
 
         .empty-state {
             text-align: center;
             padding: 48px 20px;
-            color: #9ca3af;
+            color: var(--text-secondary);
         }
         .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
         .empty-state p { font-size: 15px; }
 
-        /* 分页导航 */
         .page-nav {
             display: flex;
             align-items: center;
@@ -220,23 +229,25 @@
         }
         .page-nav .page-btn {
             padding: 10px 20px;
-            border: 1.5px solid var(--border);
+            border: 1px solid var(--border);
             background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-radius: 24px;
             font-size: 14px;
             font-weight: 600;
-            color: var(--primary);
+            color: var(--brand);
             cursor: pointer;
             transition: all 0.2s;
         }
         .page-nav .page-btn:active {
-            background: #e8f0fe;
-            border-color: var(--primary);
+            background: rgba(124,58,237,0.08);
+            border-color: var(--brand);
         }
         .page-nav .page-btn:disabled {
-            color: #c0c4cc;
-            border-color: #e5e7eb;
-            background: #f8f9fa;
+            color: #94a3b8;
+            border-color: rgba(124,58,237,0.04);
+            background: rgba(255,255,255,0.5);
             cursor: not-allowed;
         }
         .page-nav .page-info {
@@ -248,18 +259,18 @@
             color: var(--text);
         }
 
-        /* 底部导航 */
         .bottom-nav {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: var(--card-bg);
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             display: flex;
             border-top: 1px solid var(--border);
             z-index: 99;
             padding-bottom: env(safe-area-inset-bottom);
-            box-shadow: 0 -2px 12px rgba(0,0,0,0.04);
         }
         .bottom-nav .nav-item {
             flex: 1;
@@ -268,15 +279,14 @@
             align-items: center;
             padding: 10px 0;
             text-decoration: none;
-            color: var(--text-secondary);
+            color: #94a3b8;
             font-size: 11px;
             transition: all 0.2s;
             gap: 4px;
         }
-        .bottom-nav .nav-item.active { color: var(--primary); }
+        .bottom-nav .nav-item.active { color: var(--brand); }
         .bottom-nav .nav-item .nav-icon { font-size: 22px; }
 
-        /* Toast */
         .toast {
             position: fixed;
             top: 20px;
@@ -312,8 +322,8 @@
         .overlay .loader {
             width: 48px;
             height: 48px;
-            border: 4px solid rgba(255,255,255,0.3);
-            border-top-color: #fff;
+            border: 3px solid rgba(124,58,237,0.15);
+            border-top-color: var(--brand);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
@@ -332,14 +342,12 @@
 <div class="overlay" id="overlay"><div class="loader"></div></div>
 
 <div class="container">
-    <!-- 月份选择 -->
     <div class="month-picker">
         <button class="arrow-btn" onclick="prevMonth()">◀</button>
         <div class="month-label" id="monthLabel">2026年6月</div>
         <button class="arrow-btn" onclick="nextMonth()">▶</button>
     </div>
 
-    <!-- 统计 -->
     <div class="stats-row">
         <div class="stat-mini">
             <div class="stat-num green" id="statNormal">0</div>
@@ -359,7 +367,6 @@
         </div>
     </div>
 
-    <!-- 记录列表 -->
     <div class="record-list" id="recordList">
         <div class="empty-state">
             <div class="empty-icon">📋</div>
@@ -367,7 +374,6 @@
         </div>
     </div>
 
-    <!-- 分页导航 -->
     <div class="page-nav" id="pageNav" style="display:none;">
         <button class="page-btn" id="prevBtn" onclick="goPage(currentPage - 1)">上一页</button>
         <span class="page-info" id="pageInfo"></span>
@@ -434,20 +440,17 @@
     }
 
     function renderRecords(data) {
-        // 更新统计
         const s = data.stats || {};
         document.getElementById('statNormal').textContent = s.normalDays || 0;
         document.getElementById('statLate').textContent = s.lateDays || 0;
         document.getElementById('statEarly').textContent = s.earlyDays || 0;
         document.getElementById('statAbsent').textContent = s.absentDays || 0;
 
-        // 渲染列表
         const list = document.getElementById('recordList');
         const records = data.records || [];
 
         if (records.length === 0) {
             list.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><p>该月暂无考勤记录</p></div>';
-            // 无记录时也隐藏分页
             document.getElementById('pageNav').style.display = 'none';
             return;
         }
@@ -462,13 +465,11 @@
                               status === '迟到' ? 'late' :
                               status === '早退' ? 'early' : 'absent';
 
-            // 处理打卡时间：只接受字符串格式的时间，其他值显示为 '--:--:--'
             var inTime = r.checkInTime;
             var outTime = r.checkOutTime;
             if (typeof inTime !== 'string' || inTime === 'false' || inTime === 'null') inTime = '--:--:--';
             if (typeof outTime !== 'string' || outTime === 'false' || outTime === 'null') outTime = '--:--:--';
 
-            // 处理工时
             var hours = r.workHours;
             var hoursStr = '--';
             if (hours != null && hours !== '' && hours !== false && hours !== 'false') {
@@ -498,8 +499,6 @@
             '</div>';
         });
         list.innerHTML = html;
-
-        // 渲染分页导航
         renderPageNav(data);
     }
 
@@ -547,7 +546,6 @@
         document.getElementById('monthLabel').textContent = parts[0] + '年' + parseInt(parts[1]) + '月';
     }
 
-    // 初始化
     document.addEventListener('DOMContentLoaded', function() {
         const now = new Date();
         currentYearMonth = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2, '0');

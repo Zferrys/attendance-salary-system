@@ -9,11 +9,11 @@
     <title>考勤打卡 - 登录</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
             min-height: 100vh;
-            background: linear-gradient(135deg, #0f1b33 0%, #1a3a5c 40%, #1a5276 70%, #2980b9 100%);
+            background: linear-gradient(135deg, #f0f4ff 0%, #ede9fe 30%, #faf5ff 60%, #f0f9ff 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -22,12 +22,15 @@
         }
 
         .login-box {
-            background: #fff;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(124,58,237,0.1);
             border-radius: 20px;
             padding: 40px 28px 32px;
             width: 100%;
             max-width: 380px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 16px 48px rgba(99,102,241,0.1), 0 0 40px rgba(124,58,237,0.06);
             animation: slideUp 0.5s ease;
         }
 
@@ -45,14 +48,14 @@
         .login-box h2 {
             text-align: center;
             font-size: 22px;
-            color: #1f2937;
+            color: #1e293b;
             font-weight: 700;
             margin-bottom: 6px;
         }
 
         .login-box .subtitle {
             text-align: center;
-            color: #6b7280;
+            color: #64748b;
             font-size: 14px;
             margin-bottom: 28px;
         }
@@ -65,32 +68,34 @@
             display: block;
             font-size: 13px;
             font-weight: 600;
-            color: #4b5563;
+            color: #64748b;
             margin-bottom: 6px;
         }
 
         .form-group input {
             width: 100%;
             padding: 14px 16px;
-            border: 1.5px solid #d1d5db;
+            border: 1.5px solid #e2e8f0;
             border-radius: 12px;
             font-size: 16px;
-            color: #1f2937;
+            color: #1e293b;
             outline: none;
             transition: all 0.25s;
-            background: #f9fafb;
+            background: #f8fafc;
         }
 
         .form-group input:focus {
-            border-color: #1a73e8;
-            box-shadow: 0 0 0 3px rgba(26,115,232,0.12);
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 3px rgba(124,58,237,0.12);
             background: #fff;
         }
+
+        .form-group input::placeholder { color: #94a3b8; }
 
         .login-btn {
             width: 100%;
             padding: 15px;
-            background: linear-gradient(135deg, #1a73e8, #4a90d9);
+            background: linear-gradient(135deg, #7c3aed, #3b82f6);
             color: #fff;
             border: none;
             border-radius: 12px;
@@ -103,11 +108,11 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            box-shadow: 0 4px 16px rgba(124,58,237,0.25);
         }
 
         .login-btn:active {
             transform: scale(0.97);
-            opacity: 0.9;
         }
 
         .login-btn.loading {
@@ -134,14 +139,15 @@
 
         .error-msg {
             padding: 12px 16px;
-            background: #fef2f2;
-            color: #991b1b;
+            background: rgba(239,68,68,0.08);
+            color: #dc2626;
             border-radius: 10px;
             font-size: 13px;
             margin-bottom: 16px;
             display: none;
             text-align: center;
             font-weight: 500;
+            border: 1px solid rgba(239,68,68,0.15);
         }
 
         .error-msg.show { display: block; animation: shake 0.4s ease; }
@@ -155,21 +161,21 @@
         .tips {
             margin-top: 20px;
             padding: 14px 16px;
-            background: #f8fafc;
+            background: rgba(56,189,248,0.06);
             border-radius: 10px;
-            border: 1px dashed #d1d5db;
+            border: 1px dashed rgba(56,189,248,0.2);
         }
 
         .tips strong {
             display: block;
             font-size: 13px;
-            color: #4b5563;
+            color: #94a3b8;
             margin-bottom: 6px;
         }
 
         .tips p {
             font-size: 12px;
-            color: #6b7280;
+            color: #64748b;
             line-height: 1.8;
         }
 
@@ -177,21 +183,19 @@
             display: block;
             text-align: center;
             margin-top: 18px;
-            color: #1a73e8;
+            color: #7c3aed;
             font-size: 13px;
             text-decoration: none;
             font-weight: 500;
         }
 
-        .pc-link:active {
-            opacity: 0.7;
-        }
+        .pc-link:active { opacity: 0.7; }
     </style>
 </head>
 <body>
 
 <div class="login-box">
-    <div class="logo">⏱️</div>
+    <div class="logo">&#9201;&#65039;</div>
     <h2>考勤打卡</h2>
     <div class="subtitle">移动端快速打卡</div>
 
@@ -200,7 +204,7 @@
     <form id="loginForm" onsubmit="handleLogin(event)">
         <div class="form-group">
             <label for="empNo">工号</label>
-            <input type="text" id="empNo" name="empNo" 
+            <input type="text" id="empNo" name="empNo"
                    placeholder="请输入工号（如 E001）"
                    autocomplete="username"
                    required autofocus>
@@ -208,35 +212,26 @@
 
         <div class="form-group">
             <label for="password">密码</label>
-            <input type="password" id="password" name="password" 
+            <input type="password" id="password" name="password"
                    placeholder="请输入密码"
                    autocomplete="current-password"
                    required>
         </div>
 
         <button type="submit" class="login-btn" id="loginBtn">
-            <span class="btn-text">🔐 登录打卡</span>
+            <span class="btn-text">&#128274; 登录打卡</span>
             <span class="spinner"></span>
         </button>
     </form>
 
-    <div class="tips">
-        <strong>📌 测试账号（密码均为 123456）：</strong>
-        <p>
-            管理员：A001 &nbsp;|&nbsp; 主管：M001<br>
-            员工：E001 ~ E005
-        </p>
-    </div>
-
     <a href="${pageContext.request.contextPath}/views/common/login.jsp" class="pc-link">
-        💻 切换到 PC 版登录
+        &#128187; 切换到 PC 版登录
     </a>
 </div>
 
 <script>
     const ctxPath = '${pageContext.request.contextPath}';
 
-    // 页面加载时：如果是退出登录跳过来的，清除本地存储
     document.addEventListener('DOMContentLoaded', function() {
         if (window.location.search.indexOf('logout') !== -1) {
             localStorage.removeItem('miniapp_empNo');
@@ -246,19 +241,19 @@
 
     function handleLogin(e) {
         e.preventDefault();
-        
+
         const empNo = document.getElementById('empNo').value.trim();
         const password = document.getElementById('password').value.trim();
         const btn = document.getElementById('loginBtn');
-        
+
         if (!empNo || !password) {
             showError('请输入工号和密码！');
             return;
         }
-        
+
         btn.classList.add('loading');
         hideError();
-        
+
         fetch(ctxPath + '/miniapp?action=login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -268,7 +263,6 @@
         .then(data => {
             btn.classList.remove('loading');
             if (data.success) {
-                // 记住登录信息
                 localStorage.setItem('miniapp_empNo', empNo);
                 localStorage.setItem('miniapp_password', password);
                 window.location.href = ctxPath + '/miniapp?action=clock';

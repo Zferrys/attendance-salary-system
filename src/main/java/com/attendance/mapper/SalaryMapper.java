@@ -86,11 +86,13 @@ public interface SalaryMapper {
     List<Salary> findByMonth(Map<String, Object> params);
 
     /**
-     * 统计指定月份的薪资记录总数
-     * @param yearMonth 年月
+     * 统计指定月份的薪资记录总数（支持按工号/姓名搜索）
+     * @param params 查询参数Map，包含：
+     *               - yearMonth (String): 年月
+     *               - search (String, 可选): 搜索关键词（工号或姓名）
      * @return 记录总数
      */
-    int countByMonth(@Param("yearMonth") String yearMonth);
+    int countByMonth(Map<String, Object> params);
 
     /**
      * 新增薪资记录

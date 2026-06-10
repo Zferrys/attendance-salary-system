@@ -7,21 +7,21 @@
 <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
 <style>
-    .member-card { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid #f0f0f0; transition: all 0.25s; }
-    .member-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .member-card { background: var(--surface); border-radius: 12px; padding: 20px; margin-bottom: 16px; border: 1px solid var(--border); transition: all 0.25s; }
+    .member-card:hover { border-color: var(--border-glow); background: var(--surface-hover); }
     .member-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
     .member-info { display: flex; align-items: center; gap: 12px; }
-    .member-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #1a73e8, #4a90d9); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 600; }
-    .member-name { font-weight: 600; color: #1f2937; font-size: 15px; }
-    .member-position { font-size: 12px; color: #6b7280; }
+    .member-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #38bdf8, #818cf8); color: #0a0e1a; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 600; }
+    .member-name { font-weight: 600; color: var(--ink); font-size: 15px; }
+    .member-position { font-size: 12px; color: var(--ink-secondary); }
     .member-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-    .member-stat { text-align: center; padding: 10px; background: #f8fafc; border-radius: 8px; }
+    .member-stat { text-align: center; padding: 10px; background: var(--surface-hover); border-radius: 8px; }
     .member-stat .num { font-size: 20px; font-weight: 700; }
-    .member-stat .lbl { font-size: 11px; color: #6b7280; margin-top: 2px; }
-    .member-stat.normal .num { color: #0d9e6c; }
-    .member-stat.late .num { color: #f0a020; }
+    .member-stat .lbl { font-size: 11px; color: var(--ink-secondary); margin-top: 2px; }
+    .member-stat.normal .num { color: var(--success); }
+    .member-stat.late .num { color: var(--warning); }
     .member-stat.early .num { color: #f97316; }
-    .member-stat.absent .num { color: #dc3545; }
+    .member-stat.absent .num { color: var(--danger); }
 </style>
 </head>
 <body>
@@ -48,7 +48,7 @@
     </div>
 
     <div style="margin-bottom:16px;">
-        <h3 style="font-size:18px;font-weight:700;color:#1f2937;">${yearMonth} 团队成员考勤 <span style="font-size:14px;color:#6b7280;font-weight:400;">(${totalCount != null ? totalCount : teamMembers.size()} 人)</span></h3>
+        <h3 style="font-size:18px;font-weight:700;color:var(--ink);">${yearMonth} 团队成员考勤 <span style="font-size:14px;color:var(--ink-secondary);font-weight:400;">(${totalCount != null ? totalCount : teamMembers.size()} 人)</span></h3>
     </div>
 
     <c:forEach items="${teamMembers}" var="m">
@@ -57,27 +57,42 @@
                 <div class="member-info">
                     <div class="member-avatar">${fn:substring(m.name, 0, 1)}</div>
                     <div>
-                        <div class="member-name">${m.name} <code style="font-size:12px;background:#f3f4f6;padding:2px 6px;border-radius:4px;">${m.empNo}</code></div>
+                        <div class="member-name">${m.name} <code style="font-size:12px;background:var(--surface);color:var(--ink-muted);padding:2px 6px;border-radius:4px;">${m.empNo}</code></div>
                         <div class="member-position">${m.position}</div>
                     </div>
                 </div>
                 <a href="${pageContext.request.contextPath}/mgr?action=memberAttend&empId=${m.id}&yearMonth=${yearMonth}" class="btn btn-outline btn-sm">查看明细</a>
             </div>
             <div class="member-stats">
+                <% 
+                    // 从 attendList 计算当月统计
+                    com.attendance.mapper.AttendRecordMapper attendMapper = null;
+                    java.util.List<com.attendance.entity.AttendRecord> attendList = m.getAttendList();
+                    int normalDays = 0, lateDays = 0, earlyDays = 0, absentDays = 0;
+                    if (attendList != null) {
+                        for (com.attendance.entity.AttendRecord ar : attendList) {
+                            String status = ar.getStatus();
+                            if ("正常".equals(status)) normalDays++;
+                            else if ("迟到".equals(status)) lateDays++;
+                            else if ("早退".equals(status)) earlyDays++;
+                            else if ("缺勤".equals(status)) absentDays++;
+                        }
+                    }
+                %>
                 <div class="member-stat normal">
-                    <div class="num">--</div>
+                    <div class="num"><%=normalDays%></div>
                     <div class="lbl">正常</div>
                 </div>
                 <div class="member-stat late">
-                    <div class="num">--</div>
+                    <div class="num"><%=lateDays%></div>
                     <div class="lbl">迟到</div>
                 </div>
                 <div class="member-stat early">
-                    <div class="num">--</div>
+                    <div class="num"><%=earlyDays%></div>
                     <div class="lbl">早退</div>
                 </div>
                 <div class="member-stat absent">
-                    <div class="num">--</div>
+                    <div class="num"><%=absentDays%></div>
                     <div class="lbl">缺勤</div>
                 </div>
             </div>

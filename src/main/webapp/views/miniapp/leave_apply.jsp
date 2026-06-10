@@ -9,19 +9,21 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         :root {
-            --primary: #1a73e8;
-            --success: #0d9e6c;
-            --danger: #dc3545;
-            --bg: #f0f2f5;
-            --card-bg: #ffffff;
-            --text: #1f2937;
-            --text-secondary: #6b7280;
-            --border: #e5e7eb;
+            --bg-start: #f0f4ff;
+            --bg-mid: #faf5ff;
+            --bg-end: #f0f9ff;
+            --card-bg: rgba(255,255,255,0.92);
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --border: rgba(124,58,237,0.08);
+            --brand: #7c3aed;
+            --success: #10b981;
+            --danger: #ef4444;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-            background: var(--bg);
+            background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-mid) 50%, var(--bg-end) 100%);
             color: var(--text);
             min-height: 100vh;
             padding-bottom: 80px;
@@ -29,8 +31,11 @@
         }
 
         .header {
-            background: linear-gradient(135deg, #1e3a5f 0%, #2980b9 100%);
-            color: #fff;
+            background: rgba(255,255,255,0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
             padding: 16px 20px;
             display: flex;
             align-items: center;
@@ -41,14 +46,18 @@
             padding-top: max(16px, env(safe-area-inset-top));
         }
         .header .back-btn {
-            color: #fff;
+            color: var(--brand);
             text-decoration: none;
             font-size: 22px;
             padding: 4px 8px;
             border-radius: 8px;
         }
-        .header .back-btn:active { background: rgba(255,255,255,0.15); }
-        .header .title { font-size: 17px; font-weight: 700; }
+        .header .back-btn:active { background: rgba(124,58,237,0.06); }
+        .header .title {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text);
+        }
 
         .container {
             max-width: 480px;
@@ -58,9 +67,11 @@
 
         .form-card {
             background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
             border-radius: 16px;
             padding: 24px 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
         .form-group {
             margin-bottom: 20px;
@@ -77,11 +88,11 @@
         .form-group textarea {
             width: 100%;
             padding: 12px 16px;
-            border: 1.5px solid var(--border);
+            border: 1.5px solid #e2e8f0;
             border-radius: 12px;
             font-size: 15px;
             color: var(--text);
-            background: #f9fafb;
+            background: #f8fafc;
             outline: none;
             transition: all 0.25s;
             font-family: inherit;
@@ -89,8 +100,8 @@
         .form-group select:focus,
         .form-group input:focus,
         .form-group textarea:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(26,115,232,0.12);
+            border-color: var(--brand);
+            box-shadow: 0 0 0 3px rgba(124,58,237,0.12);
             background: #fff;
         }
         .form-group textarea {
@@ -105,10 +116,14 @@
             flex: 1;
         }
 
+        input[type="date"] {
+            color-scheme: light;
+        }
+
         .submit-btn {
             width: 100%;
             padding: 15px;
-            background: linear-gradient(135deg, #1a73e8, #4a90d9);
+            background: linear-gradient(135deg, #7c3aed, #3b82f6);
             color: #fff;
             border: none;
             border-radius: 12px;
@@ -121,6 +136,7 @@
             justify-content: center;
             gap: 8px;
             margin-top: 4px;
+            box-shadow: 0 4px 16px rgba(124,58,237,0.25);
         }
         .submit-btn:active {
             transform: scale(0.97);
@@ -179,24 +195,24 @@
         .overlay .loader {
             width: 48px;
             height: 48px;
-            border: 4px solid rgba(255,255,255,0.3);
-            border-top-color: #fff;
+            border: 3px solid rgba(124,58,237,0.15);
+            border-top-color: var(--brand);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
 
-        /* 底部导航 */
         .bottom-nav {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: var(--card-bg);
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             display: flex;
             border-top: 1px solid var(--border);
             z-index: 99;
             padding-bottom: env(safe-area-inset-bottom);
-            box-shadow: 0 -2px 12px rgba(0,0,0,0.04);
         }
         .bottom-nav .nav-item {
             flex: 1;
@@ -205,7 +221,7 @@
             align-items: center;
             padding: 10px 0;
             text-decoration: none;
-            color: var(--text-secondary);
+            color: #94a3b8;
             font-size: 11px;
             transition: all 0.2s;
             gap: 4px;
@@ -265,7 +281,6 @@
     </div>
 </div>
 
-<!-- 底部导航 -->
 <div class="bottom-nav">
     <a href="${pageContext.request.contextPath}/miniapp?action=clock" class="nav-item">
         <span class="nav-icon">🏠</span>
@@ -284,7 +299,6 @@
 <script>
     const ctxPath = '${pageContext.request.contextPath}';
 
-    // 设置默认日期
     document.addEventListener('DOMContentLoaded', function() {
         const today = new Date();
         const yyyy = today.getFullYear();
@@ -350,7 +364,6 @@
             if (data.success) {
                 showToast(data.message, 'success');
                 document.getElementById('leaveForm').reset();
-                // 重置日期
                 const today = new Date();
                 const todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
                 document.getElementById('startDate').value = todayStr;

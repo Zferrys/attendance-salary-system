@@ -9,32 +9,46 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         :root {
-            --primary: #1a73e8;
-            --success: #0d9e6c;
-            --danger: #dc3545;
-            --bg: #f0f2f5;
-            --card-bg: #ffffff;
-            --text: #1f2937;
-            --text-secondary: #6b7280;
-            --border: #e5e7eb;
+            --bg-start: #f0f4ff;
+            --bg-mid: #faf5ff;
+            --bg-end: #f0f9ff;
+            --card-bg: rgba(255,255,255,0.92);
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --border: rgba(124,58,237,0.08);
+            --brand: #7c3aed;
+            --success: #10b981;
+            --danger: #ef4444;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-            background: var(--bg);
+            background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-mid) 50%, var(--bg-end) 100%);
             color: var(--text);
             min-height: 100vh;
             padding-bottom: 80px;
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 个人信息卡片 */
         .profile-card {
-            background: linear-gradient(135deg, #1e3a5f 0%, #2980b9 100%);
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 30%, #3b82f6 100%);
             color: #fff;
             padding: 32px 24px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
             padding-top: max(32px, env(safe-area-inset-top) + 16px);
+        }
+        .profile-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 50%, rgba(255,255,255,0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 20%, rgba(255,255,255,0.06) 0%, transparent 40%);
+            pointer-events: none;
         }
         .profile-card .avatar {
             width: 72px;
@@ -46,20 +60,26 @@
             align-items: center;
             justify-content: center;
             font-size: 36px;
-            border: 3px solid rgba(255,255,255,0.4);
+            border: 3px solid rgba(255,255,255,0.3);
+            position: relative;
+            z-index: 1;
         }
         .profile-card .name {
             font-size: 22px;
             font-weight: 700;
             margin-bottom: 4px;
+            position: relative;
+            z-index: 1;
         }
         .profile-card .info-row {
             display: flex;
             justify-content: center;
             gap: 20px;
             font-size: 13px;
-            opacity: 0.85;
+            opacity: 0.8;
             margin-top: 8px;
+            position: relative;
+            z-index: 1;
         }
 
         .container {
@@ -68,12 +88,13 @@
             padding: 16px;
         }
 
-        /* 菜单列表 */
         .menu-list {
             background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
             border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
             margin-bottom: 16px;
         }
         .menu-item {
@@ -88,7 +109,7 @@
             gap: 14px;
         }
         .menu-item:last-child { border-bottom: none; }
-        .menu-item:active { background: #f8fafc; }
+        .menu-item:active { background: rgba(124,58,237,0.04); }
         .menu-item .menu-icon {
             font-size: 22px;
             width: 28px;
@@ -96,7 +117,7 @@
         }
         .menu-item .menu-arrow {
             margin-left: auto;
-            color: #cbd5e0;
+            color: #cbd5e1;
             font-size: 16px;
         }
         .menu-item .menu-badge {
@@ -106,15 +127,16 @@
             color: var(--text-secondary);
         }
 
-        /* 退出按钮 */
         .logout-section {
             padding: 0 16px;
         }
         .logout-btn {
             width: 100%;
             padding: 14px;
-            border: 1.5px solid var(--danger);
-            background: #fff;
+            border: 1px solid rgba(239,68,68,0.2);
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             color: var(--danger);
             border-radius: 12px;
             font-size: 15px;
@@ -127,11 +149,10 @@
             gap: 8px;
         }
         .logout-btn:active {
-            background: #fef2f2;
+            background: rgba(239,68,68,0.06);
             transform: scale(0.98);
         }
 
-        /* Toast */
         .toast {
             position: fixed;
             top: 20px;
@@ -150,18 +171,18 @@
         .toast.success { background: var(--success); }
         .toast.error { background: var(--danger); }
 
-        /* 底部导航 */
         .bottom-nav {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: var(--card-bg);
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             display: flex;
             border-top: 1px solid var(--border);
             z-index: 99;
             padding-bottom: env(safe-area-inset-bottom);
-            box-shadow: 0 -2px 12px rgba(0,0,0,0.04);
         }
         .bottom-nav .nav-item {
             flex: 1;
@@ -170,18 +191,17 @@
             align-items: center;
             padding: 10px 0;
             text-decoration: none;
-            color: var(--text-secondary);
+            color: #94a3b8;
             font-size: 11px;
             transition: all 0.2s;
             gap: 4px;
         }
-        .bottom-nav .nav-item.active { color: var(--primary); }
+        .bottom-nav .nav-item.active { color: var(--brand); }
         .bottom-nav .nav-item .nav-icon { font-size: 22px; }
     </style>
 </head>
 <body>
 
-<!-- 个人信息 -->
 <div class="profile-card">
     <div class="avatar">👤</div>
     <div class="name">${user.name}</div>
@@ -192,7 +212,6 @@
 </div>
 
 <div class="container">
-    <!-- 功能菜单 -->
     <div class="menu-list">
         <a href="${pageContext.request.contextPath}/miniapp?action=records" class="menu-item">
             <span class="menu-icon">📋</span>
@@ -211,7 +230,6 @@
         </a>
     </div>
 
-    <!-- 退出登录 -->
     <div class="logout-section">
         <button class="logout-btn" onclick="doLogout()">
             🚪 退出登录
@@ -219,7 +237,6 @@
     </div>
 </div>
 
-<!-- 底部导航 -->
 <div class="bottom-nav">
     <a href="${pageContext.request.contextPath}/miniapp?action=clock" class="nav-item">
         <span class="nav-icon">🏠</span>
@@ -240,10 +257,8 @@
     
     function doLogout() {
         if (confirm('确定要退出登录吗？')) {
-            // 先清除本地存储
             localStorage.removeItem('miniapp_empNo');
             localStorage.removeItem('miniapp_password');
-            // 跳转到服务端退出（会清除 session），带 logout 参数防止登录页自动填充
             window.location.replace(ctxPath + '/miniapp?action=logout&from=logout');
         }
     }

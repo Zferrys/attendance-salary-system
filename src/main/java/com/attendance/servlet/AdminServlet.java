@@ -477,7 +477,7 @@ public class AdminServlet extends HttpServlet {
         salaryList(req, resp);
     }
 
-    /** 薪资管理列表：查看所有员工的薪资记录（支持分页） */
+    /** 薪资管理列表：查看所有员工的薪资记录（支持分页和搜索） */
     private void salaryList(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         // 优先从 request 属性获取（可能由 salaryGen 设置），其次从参数获取
@@ -489,14 +489,18 @@ public class AdminServlet extends HttpServlet {
             yearMonth = new SimpleDateFormat("yyyy-MM").format(new java.util.Date());
         }
 
+        // 搜索参数
+        String search = req.getParameter("search");
+
         // 分页参数
         int[] pageInfo = parsePageParams(req);
-        List<Salary> list = salaryService.findByMonthPaged(yearMonth, pageInfo[1], pageInfo[2]);
-        int totalCount = salaryService.countByMonth(yearMonth);
+        List<Salary> list = salaryService.findByMonthPaged(yearMonth, pageInfo[1], pageInfo[2], search);
+        int totalCount = salaryService.countByMonth(yearMonth, search);
         
         req.setAttribute("salaryList", list);
         setPageAttributes(req, pageInfo[0], pageInfo[2], totalCount);
         req.setAttribute("yearMonth", yearMonth);
+        req.setAttribute("search", search);
         req.getRequestDispatcher("/views/admin/salary_list.jsp").forward(req, resp);
     }
 
@@ -619,6 +623,8 @@ public class AdminServlet extends HttpServlet {
         DiskFileItemFactory factory = new DiskFileItemFactory();
         ServletFileUpload upload = new ServletFileUpload(factory);
         upload.setHeaderEncoding("UTF-8");
+        // 文件大小限制：最大10MB
+        upload.setFileSizeMax(10 * 1024 * 1024);
 
         SqlSession session = MyBatisUtils.getSession();
         int successCount = 0;
@@ -633,6 +639,30 @@ public class AdminServlet extends HttpServlet {
             List<FileItem> items = upload.parseRequest(req);
             for (FileItem item : items) {
                 if (!item.isFormField()) {
+                    // 文件类型安全校验
+                    String fileName = item.getName();
+                    if (fileName == null || fileName.isEmpty()) {
+                        req.setAttribute("errorMsg", "未选择文件，请选择Excel文件上传！");
+                        empList(req, resp);
+                        return;
+                    }
+                    // 校验文件扩展名：仅允许 .xlsx 和 .xls
+                    String lowerName = fileName.toLowerCase();
+                    if (!lowerName.endsWith(".xlsx") && !lowerName.endsWith(".xls")) {
+                        req.setAttribute("errorMsg", "仅支持 .xlsx 或 .xls 格式的Excel文件！当前文件：" + fileName);
+                        empList(req, resp);
+                        return;
+                    }
+                    // 校验MIME类型
+                    String contentType = item.getContentType();
+                    if (contentType != null && !contentType.equals(
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                            && !contentType.equals("application/vnd.ms-excel")) {
+                        req.setAttribute("errorMsg", "文件类型不合法，请上传Excel文件！");
+                        empList(req, resp);
+                        return;
+                    }
+
                     InputStream is = item.getInputStream();
                     List<Employee> emps = ExcelImportUtil.parseEmployees(is);
                     if (emps.isEmpty()) {

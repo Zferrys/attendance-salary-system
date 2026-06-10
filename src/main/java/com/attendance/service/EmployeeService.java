@@ -10,4 +10,6 @@ public interface EmployeeService {
     Employee loginByEmpNo(String empNo, String password);
     /** 根据ID查询 */
     Employee findById(Integer id);
+    /** 更新用户密码 */
+    void updatePassword(Integer id, String newPassword);
 }

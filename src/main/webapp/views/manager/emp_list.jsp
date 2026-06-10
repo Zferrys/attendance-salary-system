@@ -9,23 +9,23 @@
 <style>
     .member-card {
         display: flex; align-items: center; gap: 16px;
-        padding: 16px 20px; background: #fff; border-radius: 10px;
-        margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        padding: 16px 20px; background: var(--surface); border-radius: 10px;
+        margin-bottom: 10px; border: 1px solid var(--border);
         transition: all 0.2s;
     }
-    .member-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .member-card:hover { transform: translateY(-2px); border-color: var(--border-glow); background: var(--surface-hover); }
     .member-avatar {
         width: 48px; height: 48px; border-radius: 50%;
-        background: linear-gradient(135deg, #1a73e8, #4a90d9);
-        color: #fff; display: flex; align-items: center; justify-content: center;
+        background: linear-gradient(135deg, #38bdf8, #818cf8);
+        color: #0a0e1a; display: flex; align-items: center; justify-content: center;
         font-size: 20px; font-weight: 700; flex-shrink: 0;
     }
     .member-info { flex: 1; }
-    .member-info .name { font-size: 15px; font-weight: 600; color: #1f2937; }
-    .member-info .detail { font-size: 13px; color: #6b7280; margin-top: 2px; }
+    .member-info .name { font-size: 15px; font-weight: 600; color: var(--ink); }
+    .member-info .detail { font-size: 13px; color: var(--ink-secondary); margin-top: 2px; }
     .member-status { font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 20px; }
-    .member-status.active { background: #d1fae5; color: #065f46; }
-    .member-status.inactive { background: #fee2e2; color: #991b1b; }
+    .member-status.active { background: var(--success-soft); color: var(--success); }
+    .member-status.inactive { background: var(--danger-soft); color: var(--danger); }
     .member-actions { display: flex; gap: 8px; flex-shrink: 0; }
     .btn-xs { padding: 5px 12px; font-size: 12px; border-radius: 6px; }
 </style>
@@ -45,7 +45,7 @@
     </div>
 
     <c:if test="${not empty msg}"><div class="alert alert-success">${msg}</div></c:if>
-    <c:if test="${not empty errorMsg}"><div class="alert alert-danger" style="background:#fee2e2;color:#991b1b;padding:12px;border-radius:8px;margin-bottom:16px;">${errorMsg}</div></c:if>
+    <c:if test="${not empty errorMsg}"><div class="alert alert-danger" style="background:var(--danger-soft);color:var(--danger);border:1px solid var(--danger-border);padding:12px;border-radius:8px;margin-bottom:16px;">${errorMsg}</div></c:if>
 
     <div class="filter-bar">
         <span style="font-weight:600;">团队成员列表（共 ${totalCount != null ? totalCount : teamMembers.size()} 人）</span>
@@ -59,7 +59,7 @@
                 <div class="member-card">
                     <div class="member-avatar">${fn:substring(m.name, 0, 1)}</div>
                     <div class="member-info">
-                        <div class="name">${m.name} <code style="background:#f3f4f6;padding:2px 8px;border-radius:4px;font-size:12px;">${m.empNo}</code></div>
+                        <div class="name">${m.name} <code style="background:var(--surface);color:var(--ink-muted);padding:2px 8px;border-radius:4px;font-size:12px;">${m.empNo}</code></div>
                         <div class="detail">${m.position} &nbsp;|&nbsp; 入职：${m.entryDate} &nbsp;|&nbsp; 基本工资：¥ ${m.baseSalary}</div>
                     </div>
                     <span class="member-status ${m.leaveDate == null ? 'active' : 'inactive'}">

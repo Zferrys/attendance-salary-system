@@ -2,24 +2,24 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><title>请假申请 - 考勤薪资系统</title>
+<head><meta charset="UTF-8"><meta name="_csrf" content="${pageContext.session.getAttribute('CSRF_TOKEN')}"><title>请假申请 - 考勤薪资系统</title>
 <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
 <style>
     .leave-form-card { max-width: 600px; margin: 0 auto; }
     .leave-type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
     .leave-type-option {
-        padding: 14px; border: 2px solid #e5e7eb; border-radius: 10px;
+        padding: 14px; border: 2px solid var(--border); border-radius: 10px;
         text-align: center; cursor: pointer; transition: all 0.25s;
-        background: #fff;
+        background: var(--surface);
     }
-    .leave-type-option:hover { border-color: #1a73e8; }
-    .leave-type-option.selected { border-color: #1a73e8; background: #eff6ff; }
+    .leave-type-option:hover { border-color: var(--brand); }
+    .leave-type-option.selected { border-color: var(--brand); background: var(--brand-soft); }
     .leave-type-option .icon { font-size: 24px; margin-bottom: 6px; }
-    .leave-type-option .name { font-size: 14px; font-weight: 600; color: #1f2937; }
-    .leave-type-option .desc { font-size: 11px; color: #6b7280; margin-top: 2px; }
-    .days-preview { background: #f8fafc; padding: 12px 16px; border-radius: 8px; font-size: 14px; color: #4b5563; margin-top: 8px; }
-    .days-preview strong { color: #1a73e8; }
+    .leave-type-option .name { font-size: 14px; font-weight: 600; color: var(--ink); }
+    .leave-type-option .desc { font-size: 11px; color: var(--ink-secondary); margin-top: 2px; }
+    .days-preview { background: var(--surface-hover); padding: 12px 16px; border-radius: 8px; font-size: 14px; color: var(--ink-secondary); margin-top: 8px; }
+    .days-preview strong { color: var(--brand); }
 </style>
 </head>
 <body>

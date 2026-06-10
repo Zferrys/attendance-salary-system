@@ -15,21 +15,26 @@
             align-items: center;
             margin-bottom: 20px;
             padding: 16px;
-            background: #f8fafc;
+            background: var(--surface);
             border-radius: 10px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--border);
         }
         .filter-bar label {
             font-size: 13px;
-            color: #475569;
+            color: var(--ink-secondary);
             font-weight: 500;
         }
         .filter-bar select, .filter-bar input {
             padding: 7px 12px;
-            border: 1px solid #cbd5e1;
+            border: 1px solid var(--border);
             border-radius: 6px;
             font-size: 13px;
-            background: #fff;
+            background: rgba(255,255,255,0.04);
+            color: var(--ink);
+        }
+        .filter-bar select option {
+            background: var(--bg-elevated);
+            color: var(--ink);
         }
         .filter-bar .btn {
             padding: 7px 18px;
@@ -38,27 +43,27 @@
         .attendance-table {
             width: 100%;
             border-collapse: collapse;
-            background: #fff;
+            background: var(--surface);
             border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
         }
         .attendance-table th {
-            background: #f1f5f9;
+            background: var(--surface-hover);
             padding: 12px 14px;
             text-align: left;
             font-size: 13px;
             font-weight: 600;
-            color: #334155;
-            border-bottom: 1px solid #e2e8f0;
+            color: var(--ink);
+            border-bottom: 1px solid var(--border);
         }
         .attendance-table td {
             padding: 12px 14px;
             font-size: 13px;
-            color: #475569;
-            border-bottom: 1px solid #f1f5f9;
+            color: var(--ink-secondary);
+            border-bottom: 1px solid var(--border-light);
         }
-        .attendance-table tr:hover { background: #f8fafc; }
+        .attendance-table tr:hover { background: var(--surface-hover); }
         .status-tag {
             display: inline-block;
             padding: 3px 10px;
@@ -66,14 +71,14 @@
             font-size: 12px;
             font-weight: 500;
         }
-        .status-normal { background: #d1fae5; color: #065f46; }
-        .status-late { background: #fef3c7; color: #92400e; }
-        .status-early { background: #fee2e2; color: #991b1b; }
-        .status-absent { background: #e2e8f0; color: #475569; }
+        .status-normal { background: var(--success-soft); color: var(--success); }
+        .status-late { background: var(--warning-soft); color: var(--warning); }
+        .status-early { background: var(--danger-soft); color: var(--danger); }
+        .status-absent { background: rgba(255,255,255,0.06); color: var(--ink-muted); }
         .empty-tip {
             text-align: center;
             padding: 40px;
-            color: #94a3b8;
+            color: var(--ink-muted);
             font-size: 14px;
         }
         .stats-bar {
@@ -82,15 +87,15 @@
             margin-bottom: 20px;
         }
         .stats-item {
-            background: #fff;
+            background: var(--surface);
             padding: 12px 20px;
             border-radius: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
             font-size: 13px;
         }
         .stats-item strong {
             font-size: 20px;
-            color: #1e293b;
+            color: var(--ink);
             margin-right: 4px;
         }
         .action-btns {
@@ -104,20 +109,20 @@
             text-decoration: none;
         }
         .btn-edit {
-            background: #dbeafe;
-            color: #1e40af;
-            border: 1px solid #93c5fd;
+            background: var(--info-soft);
+            color: var(--info);
+            border: 1px solid var(--info-border);
         }
         .btn-edit:hover {
-            background: #bfdbfe;
+            background: rgba(167,139,250,0.15);
         }
         .btn-delete {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #fca5a5;
+            background: var(--danger-soft);
+            color: var(--danger);
+            border: 1px solid var(--danger-border);
         }
         .btn-delete:hover {
-            background: #fecaca;
+            background: rgba(248,113,113,0.15);
         }
     </style>
 </head>
@@ -145,10 +150,10 @@
     <!-- 统计概览 -->
     <div class="stats-bar">
         <div class="stats-item"><strong>${recordList.size()}</strong>条记录</div>
-        <div class="stats-item" style="color:#065f46;"><strong id="statNormal">0</strong>正常</div>
-        <div class="stats-item" style="color:#92400e;"><strong id="statLate">0</strong>迟到</div>
-        <div class="stats-item" style="color:#991b1b;"><strong id="statEarly">0</strong>早退</div>
-        <div class="stats-item" style="color:#475569;"><strong id="statAbsent">0</strong>缺勤</div>
+        <div class="stats-item" style="color:var(--success);"><strong id="statNormal">0</strong>正常</div>
+        <div class="stats-item" style="color:var(--warning);"><strong id="statLate">0</strong>迟到</div>
+        <div class="stats-item" style="color:var(--danger);"><strong id="statEarly">0</strong>早退</div>
+        <div class="stats-item" style="color:var(--ink-muted);"><strong id="statAbsent">0</strong>缺勤</div>
     </div>
 
     <!-- 筛选栏 -->

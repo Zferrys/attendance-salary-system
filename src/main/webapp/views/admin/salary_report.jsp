@@ -8,31 +8,31 @@
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
 <style>
     .report-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px; }
-    .report-card { background: #fff; border-radius: 12px; padding: 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); text-align: center; }
-    .report-card .num { font-size: 28px; font-weight: 700; color: #1f2937; }
-    .report-card .label { font-size: 13px; color: #6b7280; margin-top: 6px; }
-    .report-card.highlight { border-left: 4px solid #0d9e6c; }
-    .report-card.warn { border-left: 4px solid #f0a020; }
+    .report-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px; text-align: center; }
+    .report-card .num { font-size: 28px; font-weight: 700; color: var(--ink); }
+    .report-card .label { font-size: 13px; color: var(--ink-secondary); margin-top: 6px; }
+    .report-card.highlight { border-left: 4px solid var(--success); }
+    .report-card.warn { border-left: 4px solid var(--warning); }
     .chart-section { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 20px; }
     @media (max-width: 768px) { .chart-section { grid-template-columns: 1fr; } }
-    .chart-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
-    .chart-card h3 { font-size: 15px; color: #374151; margin-bottom: 16px; }
+    .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+    .chart-card h3 { font-size: 15px; color: var(--ink); margin-bottom: 16px; }
     .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 13px; }
-    .bar-label { width: 80px; text-align: right; color: #6b7280; flex-shrink: 0; }
-    .bar-track { flex: 1; height: 24px; background: #f3f4f6; border-radius: 6px; overflow: hidden; position: relative; }
+    .bar-label { width: 80px; text-align: right; color: var(--ink-secondary); flex-shrink: 0; }
+    .bar-track { flex: 1; height: 24px; background: var(--surface); border-radius: 6px; overflow: hidden; position: relative; border: 1px solid var(--border-light); }
     .bar-fill { height: 100%; border-radius: 6px; transition: width 0.6s; display: flex; align-items: center; padding-left: 8px; color: #fff; font-weight: 600; font-size: 12px; }
-    .bar-fill.paid { background: linear-gradient(90deg, #0d9e6c, #34d399); }
-    .bar-fill.unpaid { background: linear-gradient(90deg, #f0a020, #fbbf24); }
+    .bar-fill.paid { background: linear-gradient(90deg, var(--success), #34d399); }
+    .bar-fill.unpaid { background: linear-gradient(90deg, var(--warning), #fbbf24); }
     .bar-fill.bonus { background: linear-gradient(90deg, #6366f1, #818cf8); }
-    .bar-fill.late { background: linear-gradient(90deg, #dc3545, #f87171); }
+    .bar-fill.late { background: linear-gradient(90deg, var(--danger), #f87171); }
     .bar-fill.leave { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
     .dept-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .dept-table th, .dept-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #f0f0f0; }
-    .dept-table th { color: #6b7280; font-weight: 600; background: #fafafa; }
-    .dept-table tr:hover { background: #f9fafb; }
+    .dept-table th, .dept-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+    .dept-table th { color: var(--ink-secondary); font-weight: 600; background: var(--surface-hover); }
+    .dept-table tr:hover { background: var(--surface-hover); }
     .export-bar { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
-    .percent-bar { width: 100%; height: 6px; background: #f3f4f6; border-radius: 3px; margin-top: 4px; overflow: hidden; }
-    .percent-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #0d9e6c, #34d399); }
+    .percent-bar { width: 100%; height: 6px; background: var(--surface); border-radius: 3px; margin-top: 4px; overflow: hidden; }
+    .percent-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--success), #34d399); }
 </style>
 </head>
 <body>
@@ -64,10 +64,10 @@
 
     <!-- 无数据提示 -->
     <c:if test="${totalCount == 0}">
-        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:28px;text-align:center;margin-bottom:20px;">
+        <div style="background:var(--warning-soft);border:1px solid var(--warning-border);border-radius:12px;padding:28px;text-align:center;margin-bottom:20px;">
             <div style="font-size:36px;margin-bottom:12px;">&#128203;</div>
-            <h3 style="color:#92400e;margin-bottom:8px;">${yearMonth} 暂无薪资数据</h3>
-            <p style="color:#a16207;margin-bottom:16px;">请先前往「薪资管理」生成该月份的薪资记录，再回来查看报表。</p>
+            <h3 style="color:var(--warning);margin-bottom:8px;">${yearMonth} 暂无薪资数据</h3>
+            <p style="color:var(--warning);opacity:0.8;margin-bottom:16px;">请先前往「薪资管理」生成该月份的薪资记录，再回来查看报表。</p>
             <a href="${pageContext.request.contextPath}/admin?action=salaryList&yearMonth=${yearMonth}" class="btn btn-primary">&#9889; 前往薪资管理生成薪资</a>
         </div>
     </c:if>
@@ -80,16 +80,16 @@
             <div class="label">&#128101; 薪资总人数</div>
         </div>
         <div class="report-card highlight">
-            <div class="num" style="color:#0d9e6c;">¥ <fmt:formatNumber value="${totalActual}" pattern="#,##0.00"/></div>
+            <div class="num" style="color:var(--success);">¥ <fmt:formatNumber value="${totalActual}" pattern="#,##0.00"/></div>
             <div class="label">&#128176; 实发薪资总额</div>
         </div>
         <div class="report-card">
-            <div class="num" style="color:#1a73e8;">${paidCount}</div>
+            <div class="num" style="color:var(--brand);">${paidCount}</div>
             <div class="label">&#9989; 已发放人数</div>
             <div class="percent-bar"><div class="percent-fill" style="width:${totalCount > 0 ? paidCount * 100 / totalCount : 0}%"></div></div>
         </div>
         <div class="report-card warn">
-            <div class="num" style="color:#f0a020;">${unpaidCount}</div>
+            <div class="num" style="color:var(--warning);">${unpaidCount}</div>
             <div class="label">&#9203; 待发放人数</div>
             <div class="percent-bar"><div class="percent-fill" style="width:${totalCount > 0 ? unpaidCount * 100 / totalCount : 0}%; background:#fbbf24;"></div></div>
         </div>
@@ -115,7 +115,7 @@
                     <div class="bar-fill unpaid" style="width:${totalCount > 0 ? unpaidCount * 100 / totalCount : 0}%; min-width:${unpaidCount > 0 ? '50px' : '0px'};"><fmt:formatNumber value="${unpaidPct}" pattern="0"/>%</div>
                 </div>
             </div>
-            <p style="font-size:12px;color:#9ca3af;margin-top:12px;">
+            <p style="font-size:12px;color:var(--ink-muted);margin-top:12px;">
                 <c:if test="${unpaidCount > 0}">&#9888; 还有 ${unpaidCount} 人薪资待发放，请前往 <a href="${pageContext.request.contextPath}/admin?action=salaryList&yearMonth=${yearMonth}">薪资管理</a> 执行发放。</c:if>
                 <c:if test="${unpaidCount == 0 && totalCount > 0}">&#127881; 所有薪资已全部发放完毕！</c:if>
             </p>
@@ -193,7 +193,7 @@
 
     <!-- 明细列表 -->
     <div class="card">
-        <div class="card-header">${yearMonth} 薪资明细 <span style="font-weight:400;font-size:13px;color:#6b7280;">(${totalCount} 条记录)</span></div>
+        <div class="card-header">${yearMonth} 薪资明细 <span style="font-weight:400;font-size:13px;color:var(--ink-secondary);">(${totalCount} 条记录)</span></div>
         <div class="card-body table-wrapper">
             <table class="data-table dept-table">
                 <thead><tr>
@@ -203,14 +203,14 @@
                 <tbody>
                     <c:forEach items="${salaryList}" var="s">
                         <tr>
-                            <td><code style="background:#f3f4f6;padding:2px 8px;border-radius:4px;">${s.empNo}</code></td>
+                            <td><code style="background:var(--surface);color:var(--ink);padding:2px 8px;border-radius:4px;">${s.empNo}</code></td>
                             <td><strong>${s.empName}</strong></td>
                             <td>${s.deptName != null ? s.deptName : '--'}</td>
                             <td>¥ ${s.baseSalary != null ? s.baseSalary : '0.00'}</td>
-                            <td style="color:#0d9e6c;">+ ¥ ${s.attendanceBonus != null && s.attendanceBonus > 0 ? s.attendanceBonus : '0.00'}</td>
-                            <td style="color:#dc3545;">- ¥ ${s.deductionLate != null && s.deductionLate > 0 ? s.deductionLate : '0.00'}</td>
-                            <td style="color:#dc3545;">- ¥ ${s.deductionLeave != null && s.deductionLeave > 0 ? s.deductionLeave : '0.00'}</td>
-                            <td><strong style="color:#0d9e6c;font-size:15px;">¥ ${s.actualSalary != null ? s.actualSalary : '0.00'}</strong></td>
+                            <td style="color:var(--success);">+ ¥ ${s.attendanceBonus != null && s.attendanceBonus > 0 ? s.attendanceBonus : '0.00'}</td>
+                            <td style="color:var(--danger);">- ¥ ${s.deductionLate != null && s.deductionLate > 0 ? s.deductionLate : '0.00'}</td>
+                            <td style="color:var(--danger);">- ¥ ${s.deductionLeave != null && s.deductionLeave > 0 ? s.deductionLeave : '0.00'}</td>
+                            <td><strong style="color:var(--success);font-size:15px;">¥ ${s.actualSalary != null ? s.actualSalary : '0.00'}</strong></td>
                             <td><span class="status-badge status-${s.status}">${s.status}</span></td>
                         </tr>
                     </c:forEach>
@@ -223,8 +223,8 @@
     </div>
 
     <!-- 快捷入口 -->
-    <div style="margin-top:20px;padding:16px;background:#f9fafb;border-radius:8px;text-align:center;">
-        <span style="color:#6b7280;margin-right:16px;">&#128269; 需要进行薪资操作？</span>
+    <div style="margin-top:20px;padding:16px;background:var(--surface);border-radius:8px;text-align:center;border:1px solid var(--border);">
+        <span style="color:var(--ink-secondary);margin-right:16px;">&#128269; 需要进行薪资操作？</span>
         <a href="${pageContext.request.contextPath}/admin?action=salaryList&yearMonth=${yearMonth}" class="btn btn-primary btn-sm">&#9889; 进入薪资管理（生成/发放）</a>
     </div>
 </div>

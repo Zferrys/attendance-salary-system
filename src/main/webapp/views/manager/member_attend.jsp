@@ -10,15 +10,15 @@
     <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
     <style>
         .calendar-container { margin-top: 12px; }
-        .cal-month-title { text-align: center; font-size: 18px; font-weight: 700; color: #1f2937; margin-bottom: 16px; }
+        .cal-month-title { text-align: center; font-size: 18px; font-weight: 700; color: var(--ink); margin-bottom: 16px; }
         .cal-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 6px;
         }
         .cal-weekday {
-            text-align: center; font-weight: 600; font-size: 13px; color: #6b7280;
-            padding: 10px 0; background: #f8fafc; border-radius: 8px;
+            text-align: center; font-weight: 600; font-size: 13px; color: var(--ink-secondary);
+            padding: 10px 0; background: var(--surface-hover); border-radius: 8px;
         }
         .cal-day {
             aspect-ratio: 1; min-height: 72px;
@@ -27,33 +27,32 @@
             font-size: 13px; position: relative; cursor: default;
             transition: all 0.2s; border: 2px solid transparent;
         }
-        .cal-day:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .cal-day:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
         .cal-day .day-num { font-size: 16px; font-weight: 700; }
         .cal-day .day-status { font-size: 11px; margin-top: 2px; font-weight: 500; }
-        .cal-day.normal { background: #d1fae5; border-color: #a7f3d0; }
-        .cal-day.late { background: #fef3c7; border-color: #fde68a; }
-        .cal-day.early { background: #ffedd5; border-color: #fed7aa; }
-        .cal-day.absent { background: #fee2e2; border-color: #fecaca; }
-        .cal-day.rest { background: #f3f4f6; color: #9ca3af; }
-        .cal-day.today { border-color: #1a73e8; box-shadow: 0 0 0 3px rgba(26,115,232,0.15); }
+        .cal-day.normal { background: var(--success-soft); border-color: var(--success-border); color: var(--success); }
+        .cal-day.late { background: var(--warning-soft); border-color: var(--warning-border); color: var(--warning); }
+        .cal-day.early { background: rgba(249,115,22,0.1); border-color: rgba(249,115,22,0.2); color: #f97316; }
+        .cal-day.absent { background: var(--danger-soft); border-color: var(--danger-border); color: var(--danger); }
+        .cal-day.rest { background: var(--surface-hover); color: var(--ink-muted); }
+        .cal-day.today { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
         .cal-day.empty { background: transparent; }
         .stats-bar { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
         .stats-bar .stat-pill {
             display: flex; align-items: center; gap: 6px;
-            padding: 8px 14px; background: #fff; border-radius: 20px;
-            font-size: 13px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            padding: 8px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+            font-size: 13px;
         }
         .stats-bar .stat-pill .dot { width: 10px; height: 10px; border-radius: 50%; }
         .member-header-bar {
             display: flex; align-items: center; gap: 12px;
             margin-bottom: 16px; padding: 14px 18px;
-            background: #fff; border-radius: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
         }
         .member-header-bar .avatar {
             width: 44px; height: 44px; border-radius: 50%;
-            background: linear-gradient(135deg, #1a73e8, #4a90d9);
-            color: #fff; display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, #38bdf8, #818cf8);
+            color: #0a0e1a; display: flex; align-items: center; justify-content: center;
             font-size: 18px; font-weight: 600;
         }
     </style>
@@ -82,8 +81,8 @@
     <div class="member-header-bar">
         <div class="avatar">${fn:substring(member.name, 0, 1)}</div>
         <div>
-            <div style="font-weight:600;font-size:15px;color:#1f2937;">${member.name} <code style="background:#f3f4f6;padding:2px 8px;border-radius:4px;font-size:12px;">${member.empNo}</code></div>
-            <div style="font-size:13px;color:#6b7280;">${member.position}</div>
+            <div style="font-weight:600;font-size:15px;color:var(--ink);">${member.name} <code style="background:var(--surface);color:var(--ink-muted);padding:2px 8px;border-radius:4px;font-size:12px;">${member.empNo}</code></div>
+            <div style="font-size:13px;color:var(--ink-secondary);">${member.position}</div>
         </div>
     </div>
 
@@ -222,6 +221,13 @@ function submitAttendEdit() {
     var form = document.createElement('form');
     form.method = 'post';
     form.action = '${pageContext.request.contextPath}/mgr';
+    
+    // 添加CSRF token
+    var csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfToken';
+    csrfInput.value = '${csrfToken}';
+    form.appendChild(csrfInput);
     
     var actionInput = document.createElement('input');
     actionInput.type = 'hidden';

@@ -4,15 +4,17 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <meta name="_csrf" content="${pageContext.session.getAttribute('CSRF_TOKEN')}">
     <title>编辑考勤记录 - 管理后台</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
+    <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
     <style>
         .edit-form {
             max-width: 500px;
-            background: #fff;
+            background: var(--surface);
             padding: 28px 32px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
         }
         .form-group {
             margin-bottom: 18px;
@@ -21,21 +23,24 @@
             display: block;
             font-size: 13px;
             font-weight: 600;
-            color: #334155;
+            color: var(--ink);
             margin-bottom: 6px;
         }
         .form-group input,
         .form-group select {
             width: 100%;
             padding: 9px 12px;
-            border: 1px solid #cbd5e1;
+            border: 1px solid var(--border);
             border-radius: 6px;
             font-size: 14px;
             box-sizing: border-box;
+            background: rgba(255,255,255,0.04);
+            color: var(--ink);
         }
+        .form-group select option { background: var(--bg-elevated); color: var(--ink); }
         .form-group input[readonly] {
-            background: #f1f5f9;
-            color: #64748b;
+            background: var(--surface-hover);
+            color: var(--ink-muted);
         }
         .form-actions {
             display: flex;
@@ -47,19 +52,19 @@
             font-size: 14px;
         }
         .readonly-info {
-            background: #f8fafc;
+            background: var(--surface-hover);
             padding: 12px 16px;
             border-radius: 8px;
             margin-bottom: 20px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--border);
         }
         .readonly-info p {
             margin: 4px 0;
             font-size: 13px;
-            color: #475569;
+            color: var(--ink-secondary);
         }
         .readonly-info strong {
-            color: #1e293b;
+            color: var(--ink);
         }
     </style>
 </head>

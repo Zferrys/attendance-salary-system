@@ -2,16 +2,16 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><title>编辑员工 - 考勤薪资系统</title>
+<head><meta charset="UTF-8"><meta name="_csrf" content="${pageContext.session.getAttribute('CSRF_TOKEN')}"><title>编辑员工 - 考勤薪资系统</title>
 <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
 <style>
     .form-card { max-width: 650px; margin: 0 auto; }
     .form-section { margin-bottom: 20px; }
-    .form-section-title { font-size: 14px; font-weight: 600; color: #4b5563; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #f0f0f0; }
+    .form-section-title { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
     .form-row { display: flex; gap: 16px; }
     .form-row .form-group { flex: 1; }
-    .input-hint { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+    .input-hint { font-size: 12px; color: var(--ink-muted); margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -28,7 +28,7 @@
         <span class="current">编辑员工</span>
     </div>
 
-    <c:if test="${not empty errorMsg}"><div class="alert alert-danger" style="background:#fee2e2;color:#991b1b;padding:12px;border-radius:8px;margin-bottom:16px;">${errorMsg}</div></c:if>
+    <c:if test="${not empty errorMsg}"><div class="alert alert-danger" style="background:var(--danger-soft);color:var(--danger);border:1px solid var(--danger-border);padding:12px;border-radius:8px;margin-bottom:16px;">${errorMsg}</div></c:if>
 
     <div class="card form-card">
         <div class="card-header">&#9998; 编辑员工信息 - ${editEmp.name}（${editEmp.empNo}）</div>

@@ -3,22 +3,22 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><title>请假审批 - 考勤薪资系统</title>
+<head><meta charset="UTF-8"><meta name="_csrf" content="${pageContext.session.getAttribute('CSRF_TOKEN')}"><title>请假审批 - 考勤薪资系统</title>
 <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
 <script src="${pageContext.request.contextPath}/assets/js/common.js"></script>
 <style>
-    .review-card { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid #f0f0f0; transition: all 0.25s; }
-    .review-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: #e5e7eb; }
+    .review-card { background: var(--surface); border-radius: 12px; padding: 20px; margin-bottom: 16px; border: 1px solid var(--border); transition: all 0.25s; }
+    .review-card:hover { border-color: var(--border-glow); background: var(--surface-hover); }
     .review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .review-user { display: flex; align-items: center; gap: 10px; }
-    .review-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #1a73e8, #4a90d9); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; }
-    .review-name { font-weight: 600; color: #1f2937; }
-    .review-dept { font-size: 12px; color: #6b7280; }
-    .review-body { font-size: 14px; color: #4b5563; line-height: 1.8; padding: 12px 0; border-top: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0; }
+    .review-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #38bdf8, #818cf8); color: #0a0e1a; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; }
+    .review-name { font-weight: 600; color: var(--ink); }
+    .review-dept { font-size: 12px; color: var(--ink-secondary); }
+    .review-body { font-size: 14px; color: var(--ink-secondary); line-height: 1.8; padding: 12px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
     .review-body .info-row { display: flex; gap: 20px; flex-wrap: wrap; }
     .review-body .info-row span { display: flex; align-items: center; gap: 4px; }
     .review-actions { display: flex; gap: 10px; margin-top: 14px; justify-content: flex-end; }
-    .review-reason { background: #f8fafc; padding: 10px 14px; border-radius: 8px; margin-top: 10px; font-size: 13px; color: #6b7280; }
+    .review-reason { background: var(--surface-hover); padding: 10px 14px; border-radius: 8px; margin-top: 10px; font-size: 13px; color: var(--ink-secondary); }
 </style>
 </head>
 <body>
@@ -39,7 +39,7 @@
     <c:if test="${not empty msg}"><div class="alert alert-success">${msg}</div></c:if>
 
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <h3 style="font-size:18px;font-weight:700;color:#1f2937;">待审批的请假申请 <span style="font-size:14px;color:#6b7280;font-weight:400;">(${totalCount} 条)</span></h3>
+        <h3 style="font-size:18px;font-weight:700;color:var(--ink);">待审批的请假申请 <span style="font-size:14px;color:var(--ink-secondary);font-weight:400;">(${totalCount} 条)</span></h3>
         <a href="${pageContext.request.contextPath}/mgr?action=dashboard" class="btn btn-outline btn-sm">&#8592; 返回首页</a>
     </div>
 

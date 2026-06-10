@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 380" fill="none">
+  <defs>
+    <linearGradient id="hBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ede9fe"/>
+      <stop offset="100%" stop-color="#dbeafe"/>
+    </linearGradient>
+    <linearGradient id="hPurple" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#6d28d9"/>
+    </linearGradient>
+    <linearGradient id="hBlue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="hCyan" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#0891b2"/>
+    </linearGradient>
+    <filter id="hShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#7c3aed" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+  <!-- Background circle decorations -->
+  <circle cx="80" cy="60" r="120" fill="#ede9fe" opacity="0.6"/>
+  <circle cx="440" cy="320" r="100" fill="#dbeafe" opacity="0.5"/>
+  <!-- Laptop -->
+  <rect x="130" y="140" width="180" height="14" rx="7" fill="#1e293b"/>
+  <rect x="145" y="50" width="150" height="100" rx="8" fill="white" filter="url(#hShadow)"/>
+  <rect x="145" y="50" width="150" height="20" rx="8" fill="url(#hPurple)"/>
+  <rect x="145" y="62" width="150" height="8" fill="white" opacity="0.2"/>
+  <!-- Dashboard content on screen -->
+  <rect x="155" y="80" width="60" height="8" rx="4" fill="#e2e8f0"/>
+  <rect x="155" y="94" width="40" height="6" rx="3" fill="#cbd5e1"/>
+  <rect x="220" y="80" width="60" height="8" rx="4" fill="#e2e8f0"/>
+  <rect x="220" y="94" width="40" height="6" rx="3" fill="#cbd5e1"/>
+  <!-- Bar chart on screen -->
+  <rect x="155" y="110" width="10" height="25" rx="3" fill="url(#hPurple)"/>
+  <rect x="170" y="105" width="10" height="30" rx="3" fill="url(#hBlue)"/>
+  <rect x="185" y="115" width="10" height="20" rx="3" fill="url(#hCyan)"/>
+  <rect x="200" y="100" width="10" height="35" rx="3" fill="url(#hPurple)"/>
+  <rect x="215" y="108" width="10" height="27" rx="3" fill="url(#hBlue)"/>
+  <!-- Floating Calendar Card -->
+  <g filter="url(#hShadow)" transform="translate(320, 30)">
+    <rect x="0" y="0" width="130" height="150" rx="14" fill="white"/>
+    <rect x="0" y="0" width="130" height="40" rx="14" fill="url(#hPurple)"/>
+    <rect x="0" y="26" width="130" height="14" fill="white" opacity="0.15"/>
+    <text x="65" y="25" text-anchor="middle" fill="white" font-size="12" font-weight="700" font-family="sans-serif">2026年6月</text>
+    <text x="18" y="65" fill="#94a3b8" font-size="9" font-family="sans-serif">一</text>
+    <text x="35" y="65" fill="#94a3b8" font-size="9" font-family="sans-serif">二</text>
+    <text x="54" y="65" fill="#94a3b8" font-size="9" font-family="sans-serif">三</text>
+    <text x="72" y="65" fill="#94a3b8" font-size="9" font-family="sans-serif">四</text>
+    <text x="90" y="65" fill="#94a3b8" font-size="9" font-family="sans-serif">五</text>
+    <circle cx="36" cy="80" r="7" fill="#ede9fe"/>
+    <circle cx="54" cy="80" r="7" fill="#dbeafe"/>
+    <circle cx="72" cy="80" r="7" fill="url(#hPurple)"/>
+    <circle cx="90" cy="95" r="7" fill="#ede9fe"/>
+    <circle cx="36" cy="110" r="7" fill="#dbeafe"/>
+    <circle cx="54" cy="110" r="7" fill="#ede9fe"/>
+  </g>
+  <!-- Floating Salary Envelope -->
+  <g filter="url(#hShadow)" transform="translate(380, 190)">
+    <rect x="0" y="0" width="120" height="130" rx="12" fill="white"/>
+    <rect x="0" y="0" width="120" height="10" rx="12" fill="url(#hBlue)"/>
+    <rect x="0" y="0" width="120" height="10" fill="white" opacity="0.2"/>
+    <path d="M0 10 L60 55 L120 10" fill="#dbeafe" opacity="0.5"/>
+    <rect x="20" y="50" width="80" height="6" rx="3" fill="#e2e8f0"/>
+    <rect x="20" y="62" width="60" height="6" rx="3" fill="#e2e8f0"/>
+    <rect x="20" y="74" width="45" height="6" rx="3" fill="#e2e8f0"/>
+    <circle cx="50" cy="100" r="16" fill="url(#hCyan)" opacity="0.2"/>
+    <text x="50" y="104" text-anchor="middle" fill="#06b6d4" font-size="14" font-weight="700" font-family="sans-serif">¥</text>
+  </g>
+  <!-- Floating Checkmark -->
+  <g transform="translate(120, 280)">
+    <circle cx="24" cy="24" r="22" fill="#22c55e" opacity="0.15"/>
+    <circle cx="24" cy="24" r="16" fill="#22c55e" opacity="0.3"/>
+    <path d="M16 24 L21 29 L32 18" stroke="#22c55e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </g>
+</svg>
