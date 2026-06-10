@@ -45,7 +45,9 @@
 │  MiniAppServlet                              │
 ├─────────────────────────────────────────────┤
 │         Service 服务层                        │
-│  EmployeeService / SalaryService             │
+│  EmployeeService / AttedRecordService /      │
+│  LeaveRequestService / DepartmentService /   │
+│  SalaryService                               │
 ├─────────────────────────────────────────────┤
 │        MyBatis 持久化层                       │
 │  Mapper 接口 + XML 映射文件                    │
@@ -150,11 +152,17 @@ attendance-salary-system/
         │   │   ├── LeaveRequestMapper.java
         │   │   └── SalaryMapper.java
         │   │
-        │   ├── service/                 # 服务层
-        │   │   ├── EmployeeService.java
-        │   │   ├── SalaryService.java
+        │   ├── service/                 # 服务层（接口+实现）
+        │   │   ├── EmployeeService.java       #   员工CRUD+查询
+        │   │   ├── AttedRecordService.java    #   考勤记录
+        │   │   ├── LeaveRequestService.java   #   请假申请
+        │   │   ├── DepartmentService.java     #   部门查询
+        │   │   ├── SalaryService.java         #   薪资核算
         │   │   └── impl/
         │   │       ├── EmployeeServiceImpl.java
+        │   │       ├── AttedRecordServiceImpl.java
+        │   │       ├── LeaveRequestServiceImpl.java
+        │   │       ├── DepartmentServiceImpl.java
         │   │       └── SalaryServiceImpl.java  # 核心薪资计算算法
         │   │
         │   ├── servlet/                 # Servlet控制器（5个）
@@ -416,12 +424,12 @@ cp src/main/resources/email.properties.example src/main/resources/email.properti
 |---|--------|---------|------|
 | 1 | 严重 | 邮箱密码硬编码在源码中 | ✅ 已修复（改为读取配置文件） |
 | 2 | 严重 | init.sql 中 UPDATE 在 INSERT 之前 | ✅ 已修复 |
-| 3 | 中危 | AttendRecordMapper.xml 中 empName 映射重复 | ⏳ 待修复 |
+| 3 | 中危 | AttendRecordMapper.xml 中 empName 映射重复 | ✅ 已修复（删除重复映射） |
 | 4 | 中危 | MD5 密码加密不够安全 | ✅ 已修复（PasswordUtil SHA-256+盐值） |
-| 5 | 中危 | 部分 Servlet 中 SqlSession 管理不统一 | ⏳ 待优化 |
+| 5 | 中危 | 部分 Servlet 中 SqlSession 管理不统一 | ✅ 已修复（统一由 Service 层管理） |
 | 6 | 低 | 三个 Servlet 中存在重复的分页工具代码 | ✅ 已修复（提取到 WebUtils.setPageAttributes） |
-| 7 | 低 | MyBatis 数据源未真正使用 Druid 连接池 | ⏳ 待修复 |
-| 8 | 低 | Service 层使用不一致 | ⏳ 待统一 |
+| 7 | 低 | MyBatis 配置误导性 POOLED 类型 | ✅ 已修复（改为 UNPOOLED，Druid 运行时替换） |
+| 8 | 低 | Service 层使用不一致 | ✅ 已修复（新建 3 个 Service，Servlet 全部解耦） |
 | 9 | 中危 | 无 CSRF 防护，存在跨站请求伪造风险 | ✅ 已修复（CsrfUtil + AuthFilter + common.js） |
 | 10 | 中危 | 无登录失败限制，存在暴力破解风险 | ✅ 已修复（LoginGuardUtil IP/账号锁定） |
 
@@ -433,7 +441,7 @@ cp src/main/resources/email.properties.example src/main/resources/email.properti
 - [x] ~~添加 CSRF 防护~~（已通过 CsrfUtil + AuthFilter 实现）
 - [x] ~~添加登录安全防护~~（已通过 LoginGuardUtil 实现）
 - [x] ~~提取公共分页代码到工具类~~（已提取到 WebUtils）
-- [ ] 统一 Service 层调用，Servlet 不直接操作 Mapper
+- [x] ~~统一 Service 层调用，Servlet 不直接操作 Mapper~~（已完成）
 - [ ] 引入 ThreadLocal 管理 SqlSession 以支持事务
 - [ ] 添加单元测试覆盖核心计算逻辑
 - [ ] JSP 视图迁移到现代前端框架（Vue/React）

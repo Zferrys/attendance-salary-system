@@ -1,19 +1,14 @@
 package com.attendance.servlet;
 
 import com.attendance.entity.*;
-import com.attendance.mapper.AttendRecordMapper;
-import com.attendance.mapper.DepartmentMapper;
-import com.attendance.mapper.EmployeeMapper;
-import com.attendance.service.SalaryService;
-import com.attendance.service.impl.SalaryServiceImpl;
+import com.attendance.service.*;
+import com.attendance.service.impl.*;
 import com.attendance.utils.EmailUtil;
 import com.attendance.utils.ExcelImportUtil;
 import com.attendance.utils.MD5Util;
-import com.attendance.utils.MyBatisUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.ibatis.session.SqlSession;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -41,7 +36,10 @@ import java.util.Map;
 @WebServlet("/admin")
 public class AdminServlet extends HttpServlet {
 
-    private SalaryService salaryService = new SalaryServiceImpl();
+    private final EmployeeService employeeService = new EmployeeServiceImpl();
+    private final DepartmentService departmentService = new DepartmentServiceImpl();
+    private final AttendRecordService attendRecordService = new AttendRecordServiceImpl();
+    private final SalaryService salaryService = new SalaryServiceImpl();
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp)
@@ -77,61 +75,39 @@ public class AdminServlet extends HttpServlet {
     /** 管理后台首页：数据概览 */
     private void dashboard(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        SqlSession session = MyBatisUtils.getSession();
-        try {
-            EmployeeMapper empMapper = session.getMapper(EmployeeMapper.class);
-            DepartmentMapper deptMapper = session.getMapper(DepartmentMapper.class);
-
-            req.setAttribute("totalEmps", empMapper.findAllWithDept().size());
-            req.setAttribute("totalDepts", deptMapper.findAll().size());
-            
-            req.getRequestDispatcher("/views/admin/dashboard.jsp").forward(req, resp);
-        } finally { MyBatisUtils.closeSession(session); }
+        req.setAttribute("totalEmps", employeeService.findAllWithDept().size());
+        req.setAttribute("totalDepts", departmentService.findAll().size());
+        req.getRequestDispatcher("/views/admin/dashboard.jsp").forward(req, resp);
     }
 
     /** 员工列表：支持多条件搜索和分页 */
     private void empList(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        SqlSession session = MyBatisUtils.getSession();
-        try {
-            EmployeeMapper mapper = session.getMapper(EmployeeMapper.class);
-            
-            Map<String, Object> params = new HashMap<>();
-            String name = req.getParameter("name");
-            String deptIdStr = req.getParameter("deptId");
-            if (name != null && !name.isEmpty()) params.put("name", name);
-            if (deptIdStr != null && !deptIdStr.isEmpty()) params.put("deptId", Integer.parseInt(deptIdStr));
+        Map<String, Object> params = new HashMap<>();
+        String name = req.getParameter("name");
+        String deptIdStr = req.getParameter("deptId");
+        if (name != null && !name.isEmpty()) params.put("name", name);
+        if (deptIdStr != null && !deptIdStr.isEmpty()) params.put("deptId", Integer.parseInt(deptIdStr));
 
-            // 分页参数
-            int[] pageInfo = parsePageParams(req);
-            params.put("offset", pageInfo[1]);
-            params.put("limit", pageInfo[2]);
+        int[] pageInfo = parsePageParams(req);
+        params.put("offset", pageInfo[1]);
+        params.put("limit", pageInfo[2]);
 
-            List<Employee> list = mapper.findByConditions(params);
-            int totalCount = mapper.countByConditions(params);
-            
-            req.setAttribute("empList", list);
-            setPageAttributes(req, pageInfo[0], pageInfo[2], totalCount);
-            
-            // 获取部门列表用于下拉筛选
-            DepartmentMapper deptMapper = session.getMapper(DepartmentMapper.class);
-            req.setAttribute("deptList", deptMapper.findAll());
-            
-            req.getRequestDispatcher("/views/admin/emp_list.jsp").forward(req, resp);
-        } finally { MyBatisUtils.closeSession(session); }
+        List<Employee> list = employeeService.findByConditions(params);
+        int totalCount = employeeService.countByConditions(params);
+
+        req.setAttribute("empList", list);
+        setPageAttributes(req, pageInfo[0], pageInfo[2], totalCount);
+        req.setAttribute("deptList", departmentService.findAll());
+        req.getRequestDispatcher("/views/admin/emp_list.jsp").forward(req, resp);
     }
 
     /** 添加新员工 */
     private void empAdd(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        // GET请求显示表单，POST请求处理提交
         if ("GET".equalsIgnoreCase(req.getMethod())) {
-            SqlSession session = MyBatisUtils.getSession();
-            try {
-                DepartmentMapper mapper = session.getMapper(DepartmentMapper.class);
-                req.setAttribute("deptList", mapper.findAll());
-                req.getRequestDispatcher("/views/admin/emp_add.jsp").forward(req, resp);
-            } finally { MyBatisUtils.closeSession(session); }
+            req.setAttribute("deptList", departmentService.findAll());
+            req.getRequestDispatcher("/views/admin/emp_add.jsp").forward(req, resp);
             return;
         }
 
@@ -154,7 +130,6 @@ public class AdminServlet extends HttpServlet {
         }
         emp.setDeptId(deptId);
         emp.setPosition(position.trim());
-        // 根据工号前缀自动设置角色
         if (empNo.trim().startsWith("A")) {
             emp.setRole("ADMIN");
         } else if (empNo.trim().startsWith("M")) {
@@ -165,14 +140,9 @@ public class AdminServlet extends HttpServlet {
         emp.setBaseSalary(java.math.BigDecimal.valueOf(baseSalaryDbl));
         emp.setEntryDate(java.sql.Date.valueOf(entryDateStr));
 
-        SqlSession session = MyBatisUtils.getSession();
-        try {
-            EmployeeMapper mapper = session.getMapper(EmployeeMapper.class);
-            mapper.insert(emp);
-            session.commit();
-            req.setAttribute("msg", "员工 " + name + " 添加成功！");
-            empList(req, resp);
-        } finally { MyBatisUtils.closeSession(session); }
+        employeeService.insert(emp);
+        req.setAttribute("msg", "员工 " + name + " 添加成功！");
+        empList(req, resp);
     }
 
     /**
@@ -186,29 +156,22 @@ public class AdminServlet extends HttpServlet {
         if (prefix == null || prefix.isEmpty()) {
             prefix = "E";
         }
-        
-        SqlSession session = MyBatisUtils.getSession();
-        try {
-            EmployeeMapper mapper = session.getMapper(EmployeeMapper.class);
-            // 查询该前缀下的最大工号
-            String maxEmpNo = mapper.findMaxEmpNoByPrefix(prefix + "%");
-            
-            int nextNum = 1;
-            if (maxEmpNo != null && maxEmpNo.length() > 1) {
-                try {
-                    nextNum = Integer.parseInt(maxEmpNo.substring(1)) + 1;
-                } catch (NumberFormatException e) {
-                    nextNum = 1;
-                }
+
+        String maxEmpNo = employeeService.findMaxEmpNoByPrefix(prefix + "%");
+
+        int nextNum = 1;
+        if (maxEmpNo != null && maxEmpNo.length() > 1) {
+            try {
+                nextNum = Integer.parseInt(maxEmpNo.substring(1)) + 1;
+            } catch (NumberFormatException e) {
+                nextNum = 1;
             }
-            
-            String newEmpNo = prefix + String.format("%03d", nextNum);
-            
-            resp.setContentType("application/json;charset=UTF-8");
-            resp.getWriter().write("{\"empNo\":\"" + newEmpNo + "\"}");
-        } finally {
-            MyBatisUtils.closeSession(session);
         }
+
+        String newEmpNo = prefix + String.format("%03d", nextNum);
+
+        resp.setContentType("application/json;charset=UTF-8");
+        resp.getWriter().write("{\"empNo\":\"" + newEmpNo + "\"}");
     }
 
     /** 编辑员工：显示编辑表单（GET请求） */
@@ -216,23 +179,16 @@ public class AdminServlet extends HttpServlet {
             throws ServletException, IOException {
         Integer empId = Integer.parseInt(req.getParameter("id"));
 
-        SqlSession session = MyBatisUtils.getSession();
-        try {
-            EmployeeMapper empMapper = session.getMapper(EmployeeMapper.class);
-            Employee emp = empMapper.findById(empId);
+        Employee emp = employeeService.findById(empId);
+        if (emp == null) {
+            req.setAttribute("errorMsg", "员工不存在！");
+            empList(req, resp);
+            return;
+        }
 
-            if (emp == null) {
-                req.setAttribute("errorMsg", "员工不存在！");
-                empList(req, resp);
-                return;
-            }
-
-            // 获取部门列表用于下拉选择
-            DepartmentMapper deptMapper = session.getMapper(DepartmentMapper.class);
-            req.setAttribute("deptList", deptMapper.findAll());
-            req.setAttribute("editEmp", emp);
-            req.getRequestDispatcher("/views/admin/emp_edit.jsp").forward(req, resp);
-        } finally { MyBatisUtils.closeSession(session); }
+        req.setAttribute("deptList", departmentService.findAll());
+        req.setAttribute("editEmp", emp);
+        req.getRequestDispatcher("/views/admin/emp_edit.jsp").forward(req, resp);
     }
 
     /** 更新员工信息（POST请求） */
@@ -250,18 +206,14 @@ public class AdminServlet extends HttpServlet {
         String position = req.getParameter("position");
         String baseSalaryStr = req.getParameter("baseSalary");
 
-        SqlSession session = MyBatisUtils.getSession();
         try {
-            EmployeeMapper empMapper = session.getMapper(EmployeeMapper.class);
-            Employee emp = empMapper.findById(empId);
-
+            Employee emp = employeeService.findById(empId);
             if (emp == null) {
                 req.setAttribute("errorMsg", "员工不存在！");
                 empList(req, resp);
                 return;
             }
 
-            // 更新字段
             emp.setName(name.trim());
             if (password != null && !password.isEmpty()) {
                 emp.setPassword(MD5Util.md5(password.trim()));
@@ -277,15 +229,12 @@ public class AdminServlet extends HttpServlet {
                 emp.setBaseSalary(java.math.BigDecimal.valueOf(Double.parseDouble(baseSalaryStr)));
             }
 
-            empMapper.update(emp);
-            session.commit();
+            employeeService.update(emp);
             req.setAttribute("msg", "员工 " + name + " 信息更新成功！");
-            empList(req, resp);
         } catch (Exception e) {
-            session.rollback();
             req.setAttribute("errorMsg", "更新失败：" + e.getMessage());
-            empList(req, resp);
-        } finally { MyBatisUtils.closeSession(session); }
+        }
+        empList(req, resp);
     }
 
     /** 删除员工（逻辑删除：设置离职日期） */
@@ -293,26 +242,20 @@ public class AdminServlet extends HttpServlet {
             throws ServletException, IOException {
         Integer empId = Integer.parseInt(req.getParameter("id"));
 
-        SqlSession session = MyBatisUtils.getSession();
         try {
-            EmployeeMapper empMapper = session.getMapper(EmployeeMapper.class);
-            Employee emp = empMapper.findById(empId);
-
+            Employee emp = employeeService.findById(empId);
             if (emp == null) {
                 req.setAttribute("errorMsg", "员工不存在！");
                 empList(req, resp);
                 return;
             }
 
-            empMapper.deleteById(empId);
-            session.commit();
+            employeeService.deleteById(empId);
             req.setAttribute("msg", "员工 " + emp.getName() + "（" + emp.getEmpNo() + "）已删除！");
-            empList(req, resp);
         } catch (Exception e) {
-            session.rollback();
             req.setAttribute("errorMsg", "删除失败：" + e.getMessage());
-            empList(req, resp);
-        } finally { MyBatisUtils.closeSession(session); }
+        }
+        empList(req, resp);
     }
 
     /**
@@ -321,53 +264,43 @@ public class AdminServlet extends HttpServlet {
      */
     private void attendanceList(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        SqlSession session = MyBatisUtils.getSession();
-        try {
-            AttendRecordMapper recordMapper = session.getMapper(AttendRecordMapper.class);
-            DepartmentMapper deptMapper = session.getMapper(DepartmentMapper.class);
-            EmployeeMapper empMapper = session.getMapper(EmployeeMapper.class);
+        String deptIdStr = req.getParameter("deptId");
+        String startDate = req.getParameter("startDate");
+        String endDate = req.getParameter("endDate");
+        String status = req.getParameter("status");
 
-            // 获取筛选参数
-            String deptIdStr = req.getParameter("deptId");
-            String startDate = req.getParameter("startDate");
-            String endDate = req.getParameter("endDate");
-            String status = req.getParameter("status");
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        if (deptIdStr != null && !deptIdStr.isEmpty()) {
+            params.put("deptId", Integer.parseInt(deptIdStr));
+        }
+        if (startDate != null && !startDate.isEmpty()) {
+            params.put("startDate", java.sql.Date.valueOf(startDate));
+        }
+        if (endDate != null && !endDate.isEmpty()) {
+            params.put("endDate", java.sql.Date.valueOf(endDate));
+        }
+        if (status != null && !status.isEmpty()) {
+            params.put("status", status);
+        }
 
-            java.util.Map<String, Object> params = new java.util.HashMap<>();
-            if (deptIdStr != null && !deptIdStr.isEmpty()) {
-                params.put("deptId", Integer.parseInt(deptIdStr));
-            }
-            if (startDate != null && !startDate.isEmpty()) {
-                params.put("startDate", java.sql.Date.valueOf(startDate));
-            }
-            if (endDate != null && !endDate.isEmpty()) {
-                params.put("endDate", java.sql.Date.valueOf(endDate));
-            }
-            if (status != null && !status.isEmpty()) {
-                params.put("status", status);
-            }
+        int[] pageInfo = parsePageParams(req);
+        params.put("offset", pageInfo[1]);
+        params.put("limit", pageInfo[2]);
 
-            // 分页参数
-            int[] pageInfo = parsePageParams(req);
-            params.put("offset", pageInfo[1]);
-            params.put("limit", pageInfo[2]);
+        java.util.List<AttendRecord> recordList = attendRecordService.findByConditions(params);
+        int totalCount = attendRecordService.countByConditions(params);
 
-            java.util.List<AttendRecord> recordList = recordMapper.findByConditions(params);
-            int totalCount = recordMapper.countByConditions(params);
-            
-            req.setAttribute("recordList", recordList);
-            setPageAttributes(req, pageInfo[0], pageInfo[2], totalCount);
-            req.setAttribute("deptList", deptMapper.findAll());
-            req.setAttribute("empList", empMapper.findAllWithDept());
+        req.setAttribute("recordList", recordList);
+        setPageAttributes(req, pageInfo[0], pageInfo[2], totalCount);
+        req.setAttribute("deptList", departmentService.findAll());
+        req.setAttribute("empList", employeeService.findAllWithDept());
 
-            // 回显筛选条件
-            req.setAttribute("deptId", deptIdStr);
-            req.setAttribute("startDate", startDate);
-            req.setAttribute("endDate", endDate);
-            req.setAttribute("status", status);
+        req.setAttribute("deptId", deptIdStr);
+        req.setAttribute("startDate", startDate);
+        req.setAttribute("endDate", endDate);
+        req.setAttribute("status", status);
 
-            req.getRequestDispatcher("/views/admin/attendance_list.jsp").forward(req, resp);
-        } finally { MyBatisUtils.closeSession(session); }
+        req.getRequestDispatcher("/views/admin/attendance_list.jsp").forward(req, resp);
     }
 
     /** 编辑考勤记录：显示编辑表单 */
@@ -375,27 +308,16 @@ public class AdminServlet extends HttpServlet {
             throws ServletException, IOException {
         Integer id = Integer.parseInt(req.getParameter("id"));
 
-        SqlSession session = MyBatisUtils.getSession();
-        try {
-            AttendRecordMapper recordMapper = session.getMapper(AttendRecordMapper.class);
-            EmployeeMapper empMapper = session.getMapper(EmployeeMapper.class);
+        AttendRecord record = attendRecordService.findById(id);
+        if (record == null) {
+            req.setAttribute("errorMsg", "考勤记录不存在！");
+            attendanceList(req, resp);
+            return;
+        }
 
-            // 查询该记录
-            java.util.Map<String, Object> params = new java.util.HashMap<>();
-            params.put("id", id);
-            java.util.List<AttendRecord> list = recordMapper.findByConditions(params);
-            AttendRecord record = list.isEmpty() ? null : list.get(0);
-
-            if (record == null) {
-                req.setAttribute("errorMsg", "考勤记录不存在！");
-                attendanceList(req, resp);
-                return;
-            }
-
-            req.setAttribute("record", record);
-            req.setAttribute("empList", empMapper.findAllWithDept());
-            req.getRequestDispatcher("/views/admin/attendance_edit.jsp").forward(req, resp);
-        } finally { MyBatisUtils.closeSession(session); }
+        req.setAttribute("record", record);
+        req.setAttribute("empList", employeeService.findAllWithDept());
+        req.getRequestDispatcher("/views/admin/attendance_edit.jsp").forward(req, resp);
     }
 
     /** 更新考勤记录 */
@@ -407,10 +329,7 @@ public class AdminServlet extends HttpServlet {
         String status = req.getParameter("status");
         String workHoursStr = req.getParameter("workHours");
 
-        SqlSession session = MyBatisUtils.getSession();
         try {
-            AttendRecordMapper recordMapper = session.getMapper(AttendRecordMapper.class);
-
             AttendRecord record = new AttendRecord();
             record.setId(id);
 
@@ -425,14 +344,10 @@ public class AdminServlet extends HttpServlet {
                 record.setWorkHours(java.math.BigDecimal.valueOf(Double.parseDouble(workHoursStr)));
             }
 
-            recordMapper.update(record);
-            session.commit();
+            attendRecordService.update(record);
             req.setAttribute("msg", "考勤记录更新成功！");
         } catch (Exception e) {
-            session.rollback();
             req.setAttribute("errorMsg", "更新失败：" + e.getMessage());
-        } finally {
-            MyBatisUtils.closeSession(session);
         }
         attendanceList(req, resp);
     }
@@ -442,17 +357,11 @@ public class AdminServlet extends HttpServlet {
             throws ServletException, IOException {
         Integer id = Integer.parseInt(req.getParameter("id"));
 
-        SqlSession session = MyBatisUtils.getSession();
         try {
-            AttendRecordMapper recordMapper = session.getMapper(AttendRecordMapper.class);
-            recordMapper.deleteById(id);
-            session.commit();
+            attendRecordService.deleteById(id);
             req.setAttribute("msg", "考勤记录删除成功！");
         } catch (Exception e) {
-            session.rollback();
             req.setAttribute("errorMsg", "删除失败：" + e.getMessage());
-        } finally {
-            MyBatisUtils.closeSession(session);
         }
         attendanceList(req, resp);
     }
@@ -520,14 +429,10 @@ public class AdminServlet extends HttpServlet {
             if (salary != null) {
                 // 从 Employee 表获取真实邮箱
                 String email = null;
-                SqlSession session = MyBatisUtils.getSession();
-                try {
-                    EmployeeMapper empMapper = session.getMapper(EmployeeMapper.class);
-                    Employee emp = empMapper.findById(salary.getEmpId());
-                    if (emp != null && emp.getEmail() != null && !emp.getEmail().isEmpty()) {
-                        email = emp.getEmail();
-                    }
-                } finally { MyBatisUtils.closeSession(session); }
+                Employee emp = employeeService.findById(salary.getEmpId());
+                if (emp != null && emp.getEmail() != null && !emp.getEmail().isEmpty()) {
+                    email = emp.getEmail();
+                }
 
                 if (email != null) {
                     boolean mailSent = EmailUtil.sendSalaryNotification(
@@ -631,37 +536,29 @@ public class AdminServlet extends HttpServlet {
         DiskFileItemFactory factory = new DiskFileItemFactory();
         ServletFileUpload upload = new ServletFileUpload(factory);
         upload.setHeaderEncoding("UTF-8");
-        // 文件大小限制：最大10MB
         upload.setFileSizeMax(10 * 1024 * 1024);
 
-        SqlSession session = MyBatisUtils.getSession();
         int successCount = 0;
         int skipCount = 0;
         StringBuilder errDetail = new StringBuilder();
         try {
-            EmployeeMapper mapper = session.getMapper(EmployeeMapper.class);
-            
-            // 预查各角色前缀的当前最大工号，用于自动分配
             Map<String, Integer> prefixCounters = new HashMap<>();
-            
+
             List<FileItem> items = upload.parseRequest(req);
             for (FileItem item : items) {
                 if (!item.isFormField()) {
-                    // 文件类型安全校验
                     String fileName = item.getName();
                     if (fileName == null || fileName.isEmpty()) {
                         req.setAttribute("errorMsg", "未选择文件，请选择Excel文件上传！");
                         empList(req, resp);
                         return;
                     }
-                    // 校验文件扩展名：仅允许 .xlsx 和 .xls
                     String lowerName = fileName.toLowerCase();
                     if (!lowerName.endsWith(".xlsx") && !lowerName.endsWith(".xls")) {
                         req.setAttribute("errorMsg", "仅支持 .xlsx 或 .xls 格式的Excel文件！当前文件：" + fileName);
                         empList(req, resp);
                         return;
                     }
-                    // 校验MIME类型
                     String contentType = item.getContentType();
                     if (contentType != null && !contentType.equals(
                             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -681,14 +578,10 @@ public class AdminServlet extends HttpServlet {
                     }
                     for (Employee emp : emps) {
                         try {
-                            // 从 empNo 临时字段取出角色前缀（ExcelImportUtil 存入的）
                             String rolePrefix = emp.getEmpNo();
-                            
-                            // 为该前缀分配下一个可用工号
-                            String newEmpNo = allocateNextEmpNo(mapper, rolePrefix, prefixCounters);
+                            String newEmpNo = allocateNextEmpNo(rolePrefix, prefixCounters);
                             emp.setEmpNo(newEmpNo);
-                            
-                            mapper.insert(emp);
+                            employeeService.insert(emp);
                             successCount++;
                         } catch (Exception insertEx) {
                             skipCount++;
@@ -698,18 +591,14 @@ public class AdminServlet extends HttpServlet {
                     is.close();
                 }
             }
-            session.commit();
             if (successCount > 0) {
                 req.setAttribute("msg", "成功导入 " + successCount + " 名员工！" + (skipCount > 0 ? "（跳过 " + skipCount + " 条）" : ""));
             } else {
                 req.setAttribute("errorMsg", "未成功导入任何员工。" + (errDetail.length() > 0 ? "\n" + errDetail.toString() : ""));
             }
         } catch (Exception e) {
-            session.rollback();
             req.setAttribute("errorMsg", "导入失败：" + e.getMessage() + (errDetail.length() > 0 ? "\n详情：" + errDetail.toString() : ""));
             e.printStackTrace();
-        } finally {
-            MyBatisUtils.closeSession(session);
         }
         empList(req, resp);
     }
@@ -721,11 +610,10 @@ public class AdminServlet extends HttpServlet {
      * @param prefixCounters 内存计数器缓存，避免批量导入时重复查询数据库
      * @return 新工号，如 E006
      */
-    private String allocateNextEmpNo(EmployeeMapper mapper, String prefix, Map<String, Integer> prefixCounters) {
+    private String allocateNextEmpNo(String prefix, Map<String, Integer> prefixCounters) {
         Integer counter = prefixCounters.get(prefix);
         if (counter == null) {
-            // 首次遇到该前缀，从数据库查询当前最大值
-            String maxEmpNo = mapper.findMaxEmpNoByPrefix(prefix + "%");
+            String maxEmpNo = employeeService.findMaxEmpNoByPrefix(prefix + "%");
             int startNum = 1;
             if (maxEmpNo != null && maxEmpNo.length() > 1) {
                 try {

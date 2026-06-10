@@ -1,14 +1,9 @@
 package com.attendance.servlet;
 
 import com.attendance.entity.*;
-import com.attendance.mapper.AttendRecordMapper;
-import com.attendance.mapper.EmployeeMapper;
-import com.attendance.mapper.LeaveRequestMapper;
-import com.attendance.service.SalaryService;
-import com.attendance.service.impl.SalaryServiceImpl;
+import com.attendance.service.*;
+import com.attendance.service.impl.*;
 import com.attendance.utils.MD5Util;
-import com.attendance.utils.MyBatisUtils;
-import org.apache.ibatis.session.SqlSession;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -28,7 +23,10 @@ import java.util.*;
 @WebServlet("/mgr")
 public class ManagerServlet extends HttpServlet {
 
-    private SalaryService salaryService = new SalaryServiceImpl();
+    private final EmployeeService employeeService = new EmployeeServiceImpl();
+    private final AttendRecordService attendRecordService = new AttendRecordServiceImpl();
+    private final LeaveRequestService leaveRequestService = new LeaveRequestServiceImpl();
+    private final SalaryService salaryService = new SalaryServiceImpl();
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp)
@@ -59,23 +57,16 @@ public class ManagerServlet extends HttpServlet {
     private void dashboard(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         Employee manager = getCurrentUser(req);
-        SqlSession session = MyBatisUtils.getSession();
-        
-        try {
-            LeaveRequestMapper leaveMapper = session.getMapper(LeaveRequestMapper.class);
-            
-            // 统计待审批请假数
-            Map<String, Object> params = new HashMap<>();
-            params.put("status", "待审批");
-            List<LeaveRequest> pendingList = leaveMapper.findByConditions(params);
-            req.setAttribute("pendingCount", pendingList.size());
-            
-            // 最近5条待审批记录
-            if (pendingList.size() > 5) pendingList = pendingList.subList(0, 5);
-            req.setAttribute("pendingLeaves", pendingList);
 
-            req.getRequestDispatcher("/views/manager/dashboard.jsp").forward(req, resp);
-        } finally { MyBatisUtils.closeSession(session); }
+        Map<String, Object> params = new HashMap<>();
+        params.put("status", "待审批");
+        List<LeaveRequest> pendingList = leaveRequestService.findByConditions(params);
+        req.setAttribute("pendingCount", pendingList.size());
+
+        if (pendingList.size() > 5) pendingList = pendingList.subList(0, 5);
+        req.setAttribute("pendingLeaves", pendingList);
+
+        req.getRequestDispatcher("/views/manager/dashboard.jsp").forward(req, resp);
     }
 
     /** 查看团队考勤统计：展示部门员工的考勤情况（支持分页） */
@@ -86,110 +77,81 @@ public class ManagerServlet extends HttpServlet {
         if (yearMonth == null || yearMonth.isEmpty()) {
             yearMonth = new SimpleDateFormat("yyyy-MM").format(new java.util.Date());
         }
-        
-        SqlSession session = MyBatisUtils.getSession();
-        try {
-            EmployeeMapper empMapper = session.getMapper(EmployeeMapper.class);
-            AttendRecordMapper attendMapper = session.getMapper(AttendRecordMapper.class);
 
-            // 分页获取同部门员工
-            Map<String, Object> params = new HashMap<>();
-            params.put("deptId", manager.getDeptId());
-            params.put("role", "EMPLOYEE");
-            
-            int[] pageInfo = parsePageParams(req);
-            params.put("offset", pageInfo[1]);
-            params.put("limit", pageInfo[2]);
-            
-            List<Employee> teamMembers = empMapper.findByConditions(params);
-            int totalCount = empMapper.countByConditions(params);
-            
-            // 获取当前页每个成员当月考勤统计
-            for (Employee member : teamMembers) {
-                Map stats = attendMapper.countByStatus(member.getId(), yearMonth);
-                member.setAttendList(attendMapper.findByEmpAndMonth(member.getId(), yearMonth));
-            }
+        Map<String, Object> params = new HashMap<>();
+        params.put("deptId", manager.getDeptId());
+        params.put("role", "EMPLOYEE");
 
-            req.setAttribute("teamMembers", teamMembers);
-            req.setAttribute("yearMonth", yearMonth);
-            setPageAttributes(req, pageInfo[0], pageInfo[2], totalCount);
-            req.getRequestDispatcher("/views/manager/team_attend.jsp").forward(req, resp);
-        } finally { MyBatisUtils.closeSession(session); }
+        int[] pageInfo = parsePageParams(req);
+        params.put("offset", pageInfo[1]);
+        params.put("limit", pageInfo[2]);
+
+        List<Employee> teamMembers = employeeService.findByConditions(params);
+        int totalCount = employeeService.countByConditions(params);
+
+        for (Employee member : teamMembers) {
+            Map stats = attendRecordService.countByStatus(member.getId(), yearMonth);
+            member.setAttendList(attendRecordService.findByEmpAndMonth(member.getId(), yearMonth));
+        }
+
+        req.setAttribute("teamMembers", teamMembers);
+        req.setAttribute("yearMonth", yearMonth);
+        setPageAttributes(req, pageInfo[0], pageInfo[2], totalCount);
+        req.getRequestDispatcher("/views/manager/team_attend.jsp").forward(req, resp);
     }
 
-    /**
-     * 查看待审批的请假申请列表（支持分页）
-     * 主管可以查看所有"待审批"状态的请假申请并进行审批操作
-     */
+    /** 查看待审批的请假申请列表（支持分页） */
     private void leaveReview(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        SqlSession session = MyBatisUtils.getSession();
-        try {
-            LeaveRequestMapper mapper = session.getMapper(LeaveRequestMapper.class);
-            Map<String, Object> params = new HashMap<>();
-            params.put("status", "待审批");
-            
-            int[] pageInfo = parsePageParams(req);
-            params.put("offset", pageInfo[1]);
-            params.put("limit", pageInfo[2]);
-            
-            List<LeaveRequest> list = mapper.findByConditions(params);
-            int totalCount = mapper.countByConditions(params);
-            
-            req.setAttribute("leaveList", list);
-            setPageAttributes(req, pageInfo[0], pageInfo[2], totalCount);
-            req.getRequestDispatcher("/views/manager/leave_review.jsp").forward(req, resp);
-        } finally { MyBatisUtils.closeSession(session); }
+        Map<String, Object> params = new HashMap<>();
+        params.put("status", "待审批");
+
+        int[] pageInfo = parsePageParams(req);
+        params.put("offset", pageInfo[1]);
+        params.put("limit", pageInfo[2]);
+
+        List<LeaveRequest> list = leaveRequestService.findByConditions(params);
+        int totalCount = leaveRequestService.countByConditions(params);
+
+        req.setAttribute("leaveList", list);
+        setPageAttributes(req, pageInfo[0], pageInfo[2], totalCount);
+        req.getRequestDispatcher("/views/manager/leave_review.jsp").forward(req, resp);
     }
 
-    /**
-     * 审批请假申请（批准或拒绝）
-     * 参数: id (请假单ID), status (已批准/已拒绝)
-     */
+    /** 审批请假申请（批准或拒绝） */
     private void approveLeave(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         Integer id = Integer.parseInt(req.getParameter("id"));
-        String status = req.getParameter("status"); // "已批准" 或 "已拒绝"
+        String status = req.getParameter("status");
         Employee manager = getCurrentUser(req);
 
-        SqlSession session = MyBatisUtils.getSession();
-        try {
-            LeaveRequestMapper mapper = session.getMapper(LeaveRequestMapper.class);
-            int rows = mapper.approve(id, status, manager.getId());
-            session.commit();
-            
-            if (rows > 0) {
-                req.setAttribute("msg", "审批成功！状态已更新为：" + status);
-            } else {
-                req.setAttribute("errorMsg", "审批失败，可能该申请已被处理。");
-            }
-            leaveReview(req, resp);
-        } finally { MyBatisUtils.closeSession(session); }
+        boolean success = leaveRequestService.approve(id, status, manager.getId());
+        if (success) {
+            req.setAttribute("msg", "审批成功！状态已更新为：" + status);
+        } else {
+            req.setAttribute("errorMsg", "审批失败，可能该申请已被处理。");
+        }
+        leaveReview(req, resp);
     }
 
     /** 查看团队员工列表（支持分页） */
     private void empList(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         Employee manager = getCurrentUser(req);
-        SqlSession session = MyBatisUtils.getSession();
-        try {
-            EmployeeMapper empMapper = session.getMapper(EmployeeMapper.class);
-            
-            Map<String, Object> params = new HashMap<>();
-            params.put("deptId", manager.getDeptId());
-            params.put("role", "EMPLOYEE");
-            
-            int[] pageInfo = parsePageParams(req);
-            params.put("offset", pageInfo[1]);
-            params.put("limit", pageInfo[2]);
-            
-            List<Employee> teamMembers = empMapper.findByConditions(params);
-            int totalCount = empMapper.countByConditions(params);
-            
-            req.setAttribute("teamMembers", teamMembers);
-            setPageAttributes(req, pageInfo[0], pageInfo[2], totalCount);
-            req.getRequestDispatcher("/views/manager/emp_list.jsp").forward(req, resp);
-        } finally { MyBatisUtils.closeSession(session); }
+        Map<String, Object> params = new HashMap<>();
+        params.put("deptId", manager.getDeptId());
+        params.put("role", "EMPLOYEE");
+
+        int[] pageInfo = parsePageParams(req);
+        params.put("offset", pageInfo[1]);
+        params.put("limit", pageInfo[2]);
+
+        List<Employee> teamMembers = employeeService.findByConditions(params);
+        int totalCount = employeeService.countByConditions(params);
+
+        req.setAttribute("teamMembers", teamMembers);
+        setPageAttributes(req, pageInfo[0], pageInfo[2], totalCount);
+        req.getRequestDispatcher("/views/manager/emp_list.jsp").forward(req, resp);
     }
 
     /** 编辑员工：显示编辑表单（GET请求） */
@@ -198,21 +160,15 @@ public class ManagerServlet extends HttpServlet {
         Employee manager = getCurrentUser(req);
         Integer empId = Integer.parseInt(req.getParameter("id"));
 
-        SqlSession session = MyBatisUtils.getSession();
-        try {
-            EmployeeMapper empMapper = session.getMapper(EmployeeMapper.class);
-            Employee emp = empMapper.findById(empId);
+        Employee emp = employeeService.findById(empId);
+        if (emp == null || !emp.getDeptId().equals(manager.getDeptId())) {
+            req.setAttribute("errorMsg", "无权编辑该员工信息！");
+            empList(req, resp);
+            return;
+        }
 
-            // 校验该员工是否属于主管的部门
-            if (emp == null || !emp.getDeptId().equals(manager.getDeptId())) {
-                req.setAttribute("errorMsg", "无权编辑该员工信息！");
-                empList(req, resp);
-                return;
-            }
-
-            req.setAttribute("editEmp", emp);
-            req.getRequestDispatcher("/views/manager/emp_edit.jsp").forward(req, resp);
-        } finally { MyBatisUtils.closeSession(session); }
+        req.setAttribute("editEmp", emp);
+        req.getRequestDispatcher("/views/manager/emp_edit.jsp").forward(req, resp);
     }
 
     /** 更新员工信息（POST请求） */
@@ -226,19 +182,14 @@ public class ManagerServlet extends HttpServlet {
         String position = req.getParameter("position");
         String baseSalaryStr = req.getParameter("baseSalary");
 
-        SqlSession session = MyBatisUtils.getSession();
         try {
-            EmployeeMapper empMapper = session.getMapper(EmployeeMapper.class);
-            Employee emp = empMapper.findById(empId);
-
-            // 校验权限
+            Employee emp = employeeService.findById(empId);
             if (emp == null || !emp.getDeptId().equals(manager.getDeptId())) {
                 req.setAttribute("errorMsg", "无权修改该员工信息！");
                 empList(req, resp);
                 return;
             }
 
-            // 更新字段
             emp.setName(name.trim());
             if (password != null && !password.isEmpty()) {
                 emp.setPassword(MD5Util.md5(password.trim()));
@@ -251,15 +202,12 @@ public class ManagerServlet extends HttpServlet {
                 emp.setBaseSalary(java.math.BigDecimal.valueOf(Double.parseDouble(baseSalaryStr)));
             }
 
-            empMapper.update(emp);
-            session.commit();
+            employeeService.update(emp);
             req.setAttribute("msg", "员工 " + name + " 信息更新成功！");
-            empList(req, resp);
         } catch (Exception e) {
-            session.rollback();
             req.setAttribute("errorMsg", "更新失败：" + e.getMessage());
-            empList(req, resp);
-        } finally { MyBatisUtils.closeSession(session); }
+        }
+        empList(req, resp);
     }
 
     /** 删除员工（逻辑删除：设置离职日期） */
@@ -268,27 +216,20 @@ public class ManagerServlet extends HttpServlet {
         Employee manager = getCurrentUser(req);
         Integer empId = Integer.parseInt(req.getParameter("id"));
 
-        SqlSession session = MyBatisUtils.getSession();
         try {
-            EmployeeMapper empMapper = session.getMapper(EmployeeMapper.class);
-            Employee emp = empMapper.findById(empId);
-
-            // 校验权限
+            Employee emp = employeeService.findById(empId);
             if (emp == null || !emp.getDeptId().equals(manager.getDeptId())) {
                 req.setAttribute("errorMsg", "无权删除该员工！");
                 empList(req, resp);
                 return;
             }
 
-            empMapper.deleteById(empId);
-            session.commit();
+            employeeService.deleteById(empId);
             req.setAttribute("msg", "员工 " + emp.getName() + "（" + emp.getEmpNo() + "）已删除！");
-            empList(req, resp);
         } catch (Exception e) {
-            session.rollback();
             req.setAttribute("errorMsg", "删除失败：" + e.getMessage());
-            empList(req, resp);
-        } finally { MyBatisUtils.closeSession(session); }
+        }
+        empList(req, resp);
     }
 
     /** 主管查看自己的薪资 */
@@ -316,28 +257,21 @@ public class ManagerServlet extends HttpServlet {
             yearMonth = new SimpleDateFormat("yyyy-MM").format(new java.util.Date());
         }
 
-        SqlSession session = MyBatisUtils.getSession();
-        try {
-            EmployeeMapper empMapper = session.getMapper(EmployeeMapper.class);
-            AttendRecordMapper attendMapper = session.getMapper(AttendRecordMapper.class);
+        Employee member = employeeService.findById(empId);
+        if (member == null || !member.getDeptId().equals(manager.getDeptId())) {
+            req.setAttribute("errorMsg", "无权查看该员工的考勤记录！");
+            teamAttend(req, resp);
+            return;
+        }
 
-            // 校验该员工是否属于主管的部门
-            Employee member = empMapper.findById(empId);
-            if (member == null || !member.getDeptId().equals(manager.getDeptId())) {
-                req.setAttribute("errorMsg", "无权查看该员工的考勤记录！");
-                teamAttend(req, resp);
-                return;
-            }
+        List<AttendRecord> records = attendRecordService.findByEmpAndMonth(empId, yearMonth);
+        Map stats = attendRecordService.countByStatus(empId, yearMonth);
 
-            List<AttendRecord> records = attendMapper.findByEmpAndMonth(empId, yearMonth);
-            Map stats = attendMapper.countByStatus(empId, yearMonth);
-
-            req.setAttribute("member", member);
-            req.setAttribute("records", records);
-            req.setAttribute("stats", stats);
-            req.setAttribute("yearMonth", yearMonth);
-            req.getRequestDispatcher("/views/manager/member_attend.jsp").forward(req, resp);
-        } finally { MyBatisUtils.closeSession(session); }
+        req.setAttribute("member", member);
+        req.setAttribute("records", records);
+        req.setAttribute("stats", stats);
+        req.setAttribute("yearMonth", yearMonth);
+        req.getRequestDispatcher("/views/manager/member_attend.jsp").forward(req, resp);
     }
 
     /** 主管修改下属考勤记录状态 */
@@ -355,43 +289,31 @@ public class ManagerServlet extends HttpServlet {
             return;
         }
 
-        SqlSession session = MyBatisUtils.getSession();
         try {
-            AttendRecordMapper attendMapper = session.getMapper(AttendRecordMapper.class);
-            EmployeeMapper empMapper = session.getMapper(EmployeeMapper.class);
-
-            // 使用 findById 直接查询，提高效率
-            AttendRecord targetRecord = attendMapper.findById(recordId);
-
+            AttendRecord targetRecord = attendRecordService.findById(recordId);
             if (targetRecord == null) {
                 req.getSession().setAttribute("errorMsg", "考勤记录不存在！");
                 resp.sendRedirect(req.getContextPath() + "/mgr?action=memberAttend&empId=" + empIdStr + "&yearMonth=" + yearMonth);
                 return;
             }
 
-            Employee recordEmp = empMapper.findById(targetRecord.getEmpId());
+            Employee recordEmp = employeeService.findById(targetRecord.getEmpId());
             if (recordEmp == null || !recordEmp.getDeptId().equals(manager.getDeptId())) {
                 req.getSession().setAttribute("errorMsg", "无权修改该员工的考勤记录！");
                 resp.sendRedirect(req.getContextPath() + "/mgr?action=memberAttend&empId=" + empIdStr + "&yearMonth=" + yearMonth);
                 return;
             }
 
-            // 更新考勤状态
             AttendRecord record = new AttendRecord();
             record.setId(recordId);
             record.setStatus(newStatus);
-            attendMapper.update(record);
-            session.commit();
+            attendRecordService.update(record);
             req.getSession().setAttribute("msg", "考勤状态已更新为：" + newStatus);
         } catch (Exception e) {
-            session.rollback();
             req.getSession().setAttribute("errorMsg", "更新失败：" + e.getMessage());
             e.printStackTrace();
-        } finally {
-            MyBatisUtils.closeSession(session);
         }
 
-        // 重定向回考勤明细页（使用session传递消息）
         resp.sendRedirect(req.getContextPath() + "/mgr?action=memberAttend&empId=" + empIdStr + "&yearMonth=" + yearMonth);
     }
 
